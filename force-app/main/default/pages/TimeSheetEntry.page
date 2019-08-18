@@ -1,0 +1,459 @@
+<apex:page controller="FacultyHomePageTimeSheet" sidebar="false" cache="false" showHeader="false">
+ <apex:form id="mainForm"> 
+        <script>
+            $(document).ready(function() {
+                  DoUpdateTotal1();
+                  $("input[id$=showWeekendsId]").attr("checked", false);
+                  $("th[id$=Satheader]").css('display','none');
+                  $("th[id$=Sunheader]").css('display','none');
+                  $("td[id$=Sat]").css('display','none');
+                  $("td[id$=Sun]").css('display','none');
+                $('#elementsToOperateOn :input').attr('disabled', {!lock});
+                //$('#elementsToOperateOn :button').attr('disabled', true);
+                //$('#timeBlockTable').resizable(); 
+                
+            }); 
+            </script>
+            <script>              
+               
+               function checkWeekEnd(){
+                   if($("input[id=j_id0:mainForm:detailBlock:showWeekendsId]").attr("checked"))
+                    {
+                        //alert('inside checkWeekEnd if condition');
+                        $("input[id$=showWeekendsId]").attr("checked", true);
+                        $("th[id$=Satheader]").css('display','block');
+                        $("th[id$=Satheader]").css('display','');
+                        $("td[id$=Sat]").css('display','block');                        
+                        $("td[id$=Sat]").css('display','');
+                        //$("td[id$=Sat]").removeAttr('style');
+                        $("th[id$=Sunheader]").css('display','block');
+                        $("th[id$=Sunheader]").css('display','');
+                        $("td[id$=Sun]").css('display','block');
+                        $("td[id$=Sun]").css('display','');                        
+                        //$("td[id$=Sun]").removeAttr('style');
+                    }
+                else{
+                        $("input[id$=showWeekendsId]").attr("checked", false);
+                        $("th[id$=Satheader]").css('display','none');
+                        $("td[id$=Sat]").css('display','none');
+                        $("th[id$=Sunheader]").css('display','none');
+                        $("td[id$=Sun]").css('display','none');                        
+                    }
+                }
+               
+    </script>
+    <style type="text/css"> 
+        #main{ width:1200px;height:650px; padding-left:140px; background-color:#3090C7;padding-top:60px;}    
+        #inner{width:1050px;height:600px;float:center;}     
+    </style>
+     <div id="main">  
+        <div id="inner">        
+        <apex:pageBlock >
+            <apex:commandLink value="Home" action="/apex/FacultyHomePage?Id={!fid}" style="color:blue;font-size:9pt;" />
+            <apex:panelGrid cellpadding="0"  bgcolor="#E0DADA"  styleClass="topPanelContainer" width="1025px" >      
+                <apex:sectionHeader title="Log" subtitle="Timecard" />
+            </apex:panelGrid> 
+        </apex:pageBlock>   
+        <apex:pageMessages id="msg" />
+        <apex:actionFunction name="leftArrowAF" action="{!leftArrow}" reRender="mainForm" />
+        <apex:actionFunction name="rightArrowAF" action="{!rightArrow}"  reRender="mainForm"/>
+        <apex:actionFunction name="showWeekend" action="{!showWeekend}"/>
+        <apex:actionFunction name="fillDate" action="{!fillDate}"/>
+         <div id="elementsToOperateOn"  >
+          <apex:pageBlock id="detailBlock"  >
+            <apex:panelGrid bgcolor="#E0DADA" columns="1" width="1025px"> 
+                <apex:outputPanel layout="block" styleClass="topPanel">
+                  <apex:panelGrid cellpadding="0" cellspacing="0" bgcolor="#E0DADA" columns="2" styleClass="topPanelContainer"> 
+                   <!--  <apex:image value="{!$Resource.TimeSheetIMG}" height="70px" width="70px" /> -->
+                     <apex:panelGroup >                     
+                     <table border="0"   height="50px" cellspacing="0" cellpadding="0" align="left"  >
+                       <tr>
+                           <td width="100px"> 
+                             <apex:inputCheckbox id="appendChkBx" disabled="{!lock}" value="{!append}"/><b>Append</b>  <br/>
+                             <apex:inputCheckbox id="withHrsChkBx" disabled="{!lock}" value="{!withHours}"/><b>With Hours</b>                       
+                           </td>
+                           
+                           <td width="150px" > 
+                               <apex:commandButton value="Copy from previous week" action="{!copyFromPreviousWeek}" reRender="timeBlockTable" style="font-size: 11px" disabled="{!lock}"/> 
+                           </td>                           
+                           <td width="100px"> </td>                           
+                           <td width="380px"> 
+                             <table >
+                                <tr align="center">  
+                                   <td>&nbsp;<apex:image url="{!URLFOR($Resource.leftRightArrows,'LeftArrow.jpg')}"  style="cursor:pointer" title="Previous Week" onclick="leftArrowAF()"/>&nbsp;</td>   
+                                   <td valign="bottom" ><apex:inputField value="{!WeekEndDate.Week_Ending_Date__c}">
+                                       <apex:actionsupport event="onchange" action="{!PopulateTimecards}" />
+                                   </apex:inputField> </td>     
+                                   <td><apex:image url="{!URLFOR($Resource.leftRightArrows,'RightArrow.jpg')}" style="cursor:pointer" title="Next Week" onclick="rightArrowAF()"/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </td>   
+                                   <td colspan="5"> <b>Week Number: </b>        
+                                         <apex:outputText value="{!week}" style="font-size:12px; " />         
+                                   </td>  
+                               </tr>
+                             </table>                      
+                           </td>
+    
+                           <td width="100px"> </td>
+                           
+                           <td> 
+                                <apex:inputCheckbox id="showWeekendsId" disabled="{!lock}" onclick="checkWeekEnd();"/>   <b>Show Weekends </b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                        
+                                <b>Status: </b>  <apex:outputText value="{!Status}" style="color:green" />                             
+                           </td>
+                       </tr>                      
+                     </table>
+               </apex:panelGroup>
+               </apex:panelGrid>
+             </apex:outputPanel>
+           </apex:panelGrid>
+          </apex:pageBlock>
+          
+          <apex:pageBlock id="timeBlock" title="Timecards"  >
+          <apex:panelGrid cellpadding="0"  cellspacing="0" bgcolor="#E0DADA" styleClass="topPanelContainer">    
+            <apex:actionFunction name="deleteAF" action="{!deleteLinesTask}" reRender="timeBlock" status="myStatus" >
+                <apex:param name="cardId" assignTo="{!SelectedTimeEntry}" value=""/>
+            </apex:actionFunction>
+            <apex:actionFunction name="DoUpdateTotal" action="{!DoUpdateTotal}" reRender="timeBlock,msg" status="myStatus" />
+            <apex:variable value="{!0}" var="rowIdx"/>
+            <apex:outputPanel rendered="{!IF(listTimesheet.size>0, false, true)}">
+                No time entries found for this week.
+            </apex:outputPanel>            
+            <apex:pageBlockSection >
+                <apex:commandButton value="Add Row" style="color:green;width:50px;font-size:8px" action="{!addLinesTask}" disabled="{!lock}"  /><br/>
+                <apex:pageBlockTable style="background-color:#E0DADA;border-color:black"   value="{!listTimesheet}" var="t" id="timeBlockTable"  rendered="{!IF(listTimesheet.size>0, true, false)}"  >
+                    <apex:column >
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}" >
+                            <apex:image rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}" style="cursor:pointer" value="{!$Resource.deleteImage}" onclick="if(confirm('Are you sure?')){deleteAF({!rowIdx});}else{return false;}" title="Delete"  alt="Del"/> 
+                        </apex:outputPanel>
+                        <apex:variable var="rowIdx" value="{!rowIdx + 1}"/>
+                    </apex:column>
+                    <apex:column headerValue="Program" >
+                        <apex:selectList size="1" value="{!t.SelectedProgram}"  disabled="{!lock}" rendered="{!NOT(t.IsTotal)}"  style="width: 150px">
+                            <apex:selectOptions value="{!Programs}" />
+                            <apex:actionSupport event="onchange" status="myStatus"  reRender="selectcourse"/>
+                        </apex:selectList>
+                    </apex:column>
+                    <apex:column headerValue="Course">
+                        <apex:selectList size="1" value="{!t.SelectedCourse}" disabled="{!lock}" rendered="{!NOT(t.IsTotal)}" style="width: 150px" id="selectcourse"  >
+                            <apex:selectOptions value="{!t.courses}"  />
+                            <apex:actionSupport event="onchange"  status="myStatus"  reRender="selectTask"/>
+                        </apex:selectList>
+                    </apex:column>
+                    <apex:column headerValue="Session">
+                        <apex:selectList size="1" value="{!t.SelectedTask}" id="selectTask" disabled="{!lock}" rendered="{!NOT(t.IsTotal)}" style="width: 150px">
+                            <apex:selectOptions value="{!t.task}"></apex:selectOptions>
+                            <apex:actionSupport event="onchange" action="{!DoUpdateTotal}" status="myStatus" />
+                        </apex:selectList>
+                        <apex:outputLabel rendered="{!t.IsTotal}"><b>Total</b></apex:outputLabel>
+                    </apex:column>
+                    <apex:column headerValue="{!Mon}" >
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}"  >
+                            <div id="monac{!rowIdx}">
+                                <apex:inputField id="mon"   onchange="DoUpdateTotal1({!rowIdx})" value="{!t.TimeMon.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}"/>
+                                <apex:outputField value="{!t.TimeMon.ru_Hours_Actual__c}" style="width:40px"  rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', false, true)}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <div id="monTotal">
+                            <span style="font-weight:bold;font-size:12px">
+                                <apex:outputField value="{!t.TimeMon.ru_Hours_Actual__c}" rendered="{!t.IsTotal}" id="MonTotal"/>
+                            </span>
+                        </div>
+                    </apex:column>
+                    <apex:column headerValue="{!Tue}" >
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}">
+                            <div id="tueac{!rowIdx}">
+                                <apex:inputField onchange="DoUpdateTotal1({!rowIdx});" value="{!t.TimeTue.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}"/>
+                                <apex:outputField value="{!t.TimeTue.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', false, true)}"/>
+                            </div> 
+                        </apex:outputPanel>
+                        <span style="font-weight:bold;font-size:12px">
+                            <apex:outputField value="{!t.TimeTue.ru_Hours_Actual__c}" rendered="{!t.IsTotal}"  id="TueTotal" />
+                        </span>
+                    </apex:column>
+                    <apex:column headerValue="{!Wed}" >
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}" >
+                            <div id="wedac{!rowIdx}">
+                                <apex:inputField onchange="DoUpdateTotal1({!rowIdx});" value="{!t.TimeWed.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}"/>
+                                <apex:outputField value="{!t.TimeWed.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', false, true)}"/>
+                            </div> 
+                        </apex:outputPanel>
+                        <span style="font-weight:bold;font-size:12px">
+                            <apex:outputField value="{!t.TimeWed.ru_Hours_Actual__c}" rendered="{!t.IsTotal}" id="WedTotal" />
+                        </span>
+                    </apex:column>
+                    <apex:column headerValue="{!Thur}">
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}" >
+                            <div id="thurac{!rowIdx}">
+                                <apex:inputField onchange="DoUpdateTotal1({!rowIdx});" value="{!t.TimeThu.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}"/>
+                                <apex:outputField value="{!t.TimeThu.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', false, true)}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <span style="font-weight:bold;font-size:12px">
+                            <apex:outputField value="{!t.TimeThu.ru_Hours_Actual__c}" rendered="{!t.IsTotal}" id="ThurTotal" />
+                        </span>
+                    </apex:column>
+                    <apex:column headerValue="{!Fri}" id="Fri">
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}" >
+                            <div id="friac{!rowIdx}">
+                                <apex:inputField onchange="DoUpdateTotal1({!rowIdx});" value="{!t.TimeFri.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}"/>
+                                <apex:outputField value="{!t.TimeFri.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', false, true)}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <span style="font-weight:bold;font-size:12px">
+                            <apex:outputField value="{!t.TimeFri.ru_Hours_Actual__c}" rendered="{!t.IsTotal}" id="FriTotal"/>
+                        </span>
+                    </apex:column>
+                    
+                    <apex:column headerValue="{!Sat}" id="Sat">
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}" >
+                            <div id="satac{!rowIdx}">
+                                <apex:inputField onchange="DoUpdateTotal1({!rowIdx});" value="{!t.TimeSat.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}"/>
+                                <apex:outputField value="{!t.TimeSat.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', false, true)}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <span style="font-weight:bold;font-size:12px">
+                            <apex:outputField value="{!t.TimeSat.ru_Hours_Actual__c}" rendered="{!t.IsTotal}" id="SatTotal"/>
+                        </span>
+                    </apex:column>
+                    <apex:column headerValue="{!Sun}" id="Sun">
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}" >
+                            <div id="sunac{!rowIdx}">
+                            <apex:inputField onchange="DoUpdateTotal1({!rowIdx});" value="{!t.TimeSun.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', true, false)}"/>
+                            <apex:outputField value="{!t.TimeSun.ru_Hours_Actual__c}" style="width:40px" rendered="{!IF(t.Status!='Submitted' && t.Status!='Approved', false, true)}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <span style="font-weight:bold;font-size:12px">
+                            <apex:outputField value="{!t.TimeSun.ru_Hours_Actual__c}" rendered="{!t.IsTotal}" id="SunTotal"/>
+                        </span>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Total">
+                    <div id="totalac{!rowIdx}">
+                        <span style="font-weight:bold;font-size:12px">
+                            <apex:outputField value="{!t.TotalHours.ru_Hours_Actual__c}" />
+                        </span>
+                    </div>
+                    </apex:column>
+                    <!--- Ceptes 01... comment column added -->
+                    <apex:column headerValue="Add Comments">
+                        <apex:outputPanel rendered="{!NOT(t.IsTotal)}" >
+                            <div id="btnProject1{!rowIdx}"><button id="btnProjectG{!rowIdx}" onclick="return getID(this)"><img src="/resource/1306836868000/plus" height="15px" width="15px" style="opacity:0.45;display:block" /></button></div>
+                            <div id="btnProject2{!rowIdx}" style="display:none;" class="demo"> <button id="btnProjectR{!rowIdx}" type="button" onclick="return getID(this)"> <img src="/resource/1306836868000/redplus" height="13px" width="13px" style="display:block;opacity:0.90;" /></button></div>
+                            <div id="NoteText{!rowIdx}" title="Note" style="display: none; position:relative; width:20px;" >
+                                <apex:inputTextarea id="styled" cols="30" rows="3" onBlur="saveComment('styled{!rowIdx}')" value="{!t.Comment}"/>
+                            </div>
+                        </apex:outputPanel>
+                   </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            </apex:panelGrid>
+            <!--Ceptes 01... End of Case block -->
+            <apex:pageBlockButtons location="bottom">
+            <apex:commandButton value="Save" action="{!saveTimeCard}"  disabled="{!lock}" style="width:50px;font-size:10px"/>
+             <apex:commandButton value="Submit for Approval" disabled="{!lock}" action="{!submitTimeCard}" onclick="if(confirm('Are you sure to submit for approval?')){return true;}else{return false;}" style="width:100px;font-size:10px"/>
+             <apex:actionStatus stopText="" id="myStatus">
+                    <apex:facet name="start">
+                    <img src="/img/loading.gif" />
+                    </apex:facet>
+                </apex:actionStatus>
+            </apex:pageBlockButtons>        
+         </apex:pageBlock>   
+        </div>
+       </div> 
+    </div>
+    
+   
+    <!-- Ceptes 01-->
+    <apex:includeScript value="{!$Resource.jquery142}"/>
+    <apex:includeScript value="{!$Resource.jquerydatatable}"/>
+    <apex:includeScript value="{!$Resource.jquery1812}/development-bundle/ui/jquery.ui.core.js"/>
+    <apex:includeScript value="{!$Resource.jquery1812}/development-bundle/ui/jquery.ui.widget.js"/>
+    <apex:includeScript value="{!$Resource.jquery1812}/development-bundle/ui/jquery.ui.mouse.js"/>
+    <link rel="stylesheet" href="{!$Resource.jquery1812}/development-bundle/themes/base/jquery.ui.all.css" />
+    <link rel="stylesheet" href="{!$Resource.jquery1812}/development-bundle/demos/demos.css" />
+    
+    <script>
+        function setFocusOnLoad(){} 
+    </script> 
+    
+    <script type="text/javascript">
+        function getID(theLink){
+            var btnId=theLink.id;
+            $('div[id=NoteText'+btnId.substring(11, btnId.length)+']').css('display','block');
+            return false;
+        }
+        function saveComment(txtId){
+        $('div[id=NoteText'+txtId.substring(6, txtId.length)+']').css('display','none');
+        var textval = $('div[id=NoteText'+txtId.substring(6, txtId.length)+']').find('textarea').val();
+        
+        if(textval!=''){
+        $('div[id=btnProject1'+txtId.substring(6, txtId.length)+']').css('display','none');
+        $('div[id=btnProject1'+txtId.substring(6, txtId.length)+']').attr('disabled',true);
+        $('div[id=btnProject2'+txtId.substring(6, txtId.length)+']').css('display','block');
+        $('div[id=btnProject2'+txtId.substring(6, txtId.length)+']').attr('disabled',fasle);
+        }
+        //var buttonId='btnProjectR'+txtId.substring(6, txtId.length);
+        // $('#'+buttonId).attr("disabled","disabled");
+        
+        }
+        
+        
+        function DoUpdateTotal1(fldNo){
+            var allVal1 = [];
+            var allVal2 = [];
+            var allVal3 = [];
+            var allVal4 = [];
+            var allVal5 = [];
+            var allVal6 = [];
+            var allVal7 = [];
+            var allvaltotal = [];
+            var allvalGrandTotal = [];
+            
+            //start to get the total value horizontally
+            $('div[id$=ac'+fldNo+'.0]').each(function(){
+                allvaltotal.push($(this).find('input[type=text]').val());
+                var total1 = 0;
+                for(i=0;i<allvaltotal.length;i++){
+                    if(!isNaN(allvaltotal[i]) && allvaltotal[i]!= ''){
+                        total1 += parseFloat(allvaltotal[i]);
+                    }
+                }
+                
+                
+                $('div[id=totalac'+fldNo+'.0]').find('span').html(total1);
+                
+            });
+            
+            //end to get the total value horizontally
+            
+            
+            //start to get the total value vertically
+            $('div[id^=monac]').each(function() {
+                allVal1.push($(this).find('input[type=text]').val());
+                var total = 0;
+                for(i=0;i<allVal1.length;i++){
+                    if(!isNaN(allVal1[i]) && allVal1[i]!= ''){
+                        total += parseFloat(allVal1[i]);
+                    }
+                }
+                
+                // $('div[id=monTotal]').find('span').html(total1);
+                $('span[id$=MonTotal]').html(total);
+            });
+            
+            $('div[id^=tueac]').each(function(){
+                allVal2.push($(this).find('input[type=text]').val());
+                var total = 0;
+                for(i=0;i<allVal2.length;i++){
+                    if(allVal2[i]!='')
+                        total += parseFloat(allVal2[i]);                }
+                // $('span[id=j_id0:mainForm:timeBlock:j_id69:timeBlockTable:3:TueTotal]').html(total);
+                $('span[id$=TueTotal]').html(total);
+            });
+            
+            $('div[id^=wedac]').each(function(){
+                allVal3.push($(this).find('input[type=text]').val());
+                var total = 0;
+                for(i=0;i<allVal3.length;i++){
+                    if(allVal3[i]!='')
+                        total += parseFloat(allVal3[i]);
+                }
+                // $('span[id=j_id0:mainForm:timeBlock:j_id69:timeBlockTable:3:WedTotal]').html(total);
+                $('span[id$=WedTotal]').html(total);
+            });
+            
+            $('div[id^=thurac]').each(function(){
+                allVal4.push($(this).find('input[type=text]').val());
+                var total = 0;
+                for(i=0;i<allVal4.length;i++){
+                    if(allVal4[i]!='')
+                        total += parseFloat(allVal4[i]);
+                
+                }
+                //$('span[id=j_id0:mainForm:timeBlock:j_id69:timeBlockTable:3:ThurTotal]').html(total);
+                $('span[id$=ThurTotal]').html(total);
+            });
+            
+            $('div[id^=friac]').each(function() {
+                allVal5.push($(this).find('input[type=text]').val());
+                var total = 0;
+                for(i=0;i<allVal5.length;i++){
+                    if(allVal5[i]!='')
+                        total += parseFloat(allVal5[i]);
+                    
+                }
+                //$('span[id=j_id0:mainForm:timeBlock:j_id69:timeBlockTable:3:FriTotal]').html(total);
+                $('span[id$=FriTotal]').html(total);
+            });
+            $('div[id^=satac]').each(function() {
+                allVal6.push($(this).find('input[type=text]').val());
+                var total = 0;
+                for(i=0;i<allVal6.length;i++){
+                    if(allVal6[i]!='')
+                    total += parseFloat(allVal6[i]);
+                
+                }
+                //$('span[id=j_id0:mainForm:timeBlock:j_id69:timeBlockTable:3:SatTotal]').html(total);
+                $('span[id$=SatTotal]').html(total);
+            });
+            $('div[id^=sunac]').each(function() {
+                allVal7.push($(this).find('input[type=text]').val());
+                var total = 0;
+                for(i=0;i<allVal7.length;i++){
+                    if(allVal7[i]!='')
+                    total += parseFloat(allVal7[i]);
+                
+                }
+                //$('span[id=j_id0:mainForm:timeBlock:j_id69:timeBlockTable:3:SunTotal]').html(total);
+                $('span[id$=SunTotal]').html(total);
+            });
+            //end to get the total value vertically
+            
+            // Start To calculate activity Total
+            
+            $('div[id^=totalac'+fldNo+'.0]').each(function(){ 
+            
+                for(i=1;i<={!listTimesheet.size-1};i++){
+                
+                    allvalGrandTotal.push($('div[id^=totalac'+i+'.0]').find('span').text());
+                
+            
+                }
+            var total2 = 0.00;
+            
+                for(i=0;i<allvalGrandTotal.length;i++){
+                    if(!isNaN(allvalGrandTotal[i]) || allvalGrandTotal[i]!= ''){
+                    
+                        total2 += parseFloat(allvalGrandTotal[i]);
+                    }
+                }
+                fldNo = {!listTimesheet.size};
+                $('div[id=totalac'+fldNo+'.0]').find('span').html(total2);
+            
+            });
+            // End To calculate activity Total
+            
+            //Start To calculate Grand Total
+            $('div[id^=total]').each(function(){ 
+                
+                fldNoAc = {!listTimesheet.size};
+                var acTotal = $('div[id=totalac'+fldNoAc+'.0]').find('span').text();
+                
+                
+                
+                var GrandTotal = parseFloat(acTotal);
+                
+                $('div[id=totalgrand]').find('span').html(GrandTotal);
+            }); 
+            
+        //End To calculate Grand Total
+        
+        } 
+        
+        function DoUpdateTotal3(){
+            DoUpdateTotal1();
+            
+            }
+        // window.onload=DoUpdateTotal3;
+        
+    </script>
+</apex:form>
+</apex:page>

@@ -1,0 +1,353 @@
+<apex:page sidebar="false" id="studentpage" controller="StudentController" showHeader="false">
+    <script src="{!$Resource.Ctp_UserAuth}"></script>
+<apex:form id="studentform">    
+<style type="text/css">
+     #header{width: 100%;padding-bottom: 5px;}
+     #Navigation{width: 100%;height: 10%;padding-bottom: 15px;}
+     #body{width: 100%;height: 75%;}
+     #left{width: 24%;height:100%;float:left;padding-left:1%;}
+     #middle{width:72%;height:98%;float:left;padding-left:2%;}
+     #left1{width: 100%;height:98%;padding-bottom: 1%;}
+     #left2{width: 100%;height:98%;padding-bottom: 1%;}
+     #left3{width: 100%;height: 98%;}
+     #left4{width: 100%;height: 98%;}
+     #middle1{width:100%;height:98%;padding-bottom: 1%;}
+     #middle2{width:100%;height: 98%;}     
+     .odd {background-color: #FCF7F7;height:20px;}
+     .even {background-color: #E3DCDB;height:20px;}
+     .border{background-color:#E3F3FF;height:20px;font-weight:bold;}
+    }
+</style>
+     <div id="main">
+           <div id="header">
+                <apex:image url="{!URLFOR($Resource.images, 'image/header.png')}" width="100%" height="60px" /> 
+           </div>
+           <div id="Navigation">
+              <apex:toolbar id="navigation"  itemSeparator="line" style="background: #2a6da9; background: -moz-linear-gradient(top, bottom, #55aaee, #003366);background: -webkit-gradient(linear, top, bottom, from(#55aaee), to(#003366));background-image:none; height:25px; broder-color:FF9966">
+                  <apex:toolbarGroup itemSeparator="line" location="right">                      
+                      <apex:commandLink action="{!doLogout}" value="Logout" style="color:white;"/>
+                  </apex:toolbarGroup>
+             </apex:toolbar>
+           </div>
+           <div id="body">
+              <div id="left"> 
+                  <div id="left1"> 
+                       <apex:pageBlock tabStyle="Program__c">
+                           <apex:pageBlockSection collapsible="true" title="My Settings" columns="1"> 
+                               <apex:pageBlockSectionItem >
+                                   <apex:outputLabel value="Welcome," for="name"/>
+                                   <b>{!uinfo.UserInfoId__r.First_Name__c} {!uinfo.UserInfoId__r.Last_Name__c}</b>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem >
+                                     <apex:image url="{!URLFOR($Resource.images, 'image/gmail_M_icon.gif')}"/>
+                                     <apex:outputText >{!uinfo.UserInfoId__r.Email_Id__c}</apex:outputText>
+                                </apex:pageBlockSectionItem>
+                                <apex:pageBlockSectionItem >
+                                    <apex:image url="{!URLFOR($Resource.CTPImages, 'Imz/PhoneIcon.gif')}" />
+                                    <apex:outputText >{!uinfo.UserInfoId__r.Mobile_No__c}</apex:outputText>
+                                </apex:pageBlockSectionItem>
+                          </apex:pageBlockSection>
+                       </apex:pageBlock>
+                   </div>
+                   
+                   <div id="left2">                  
+                        <apex:pageBlock tabStyle="Program__c">
+                            <apex:pageBlockSection columns="1" title="Post And Feedback">
+                                <apex:outputLink value="/apex/Ctp_Query_Portal_page" ><b>Posts : ({!newlypost})</b>
+                                    <apex:param name="id" value="{! uinfo.Id}"/>
+                                    <apex:param name="type" value="{!uinfo.UserInfoId__r.Type__c}"/>
+                                    <apex:param name="name" value="{!uinfo.UserInfoId__r.First_Name__c}"/>
+                                </apex:outputLink>
+                                <apex:outputLink value="/apex/Ctp_feedback_form" > FeedBack form </apex:outputLink>                      
+                           </apex:pageBlockSection>
+                      </apex:pageBlock>
+                   </div>
+                   <div id="left3">                   
+                       <apex:pageBlock tabStyle="Program__c" id="examses" >
+                          <apex:pageBlockSection title="Assesment Exam" columns="1">
+                               <apex:outputText rendered="{!timeUp}"><b>  Your Exam is ready 
+                               <center><apex:commandLink value="Click here" action="{!doExam}" target="_blank"  style="color:blue"  reRender="examses"/></center>
+                               to start your exam.</b></apex:outputText>
+                              <apex:outputText rendered="{!isError}" ><b><center><font color="blue">Sorry!you cannot click again.</font></center></b></apex:outputText>
+                           </apex:pageBlockSection>
+                       </apex:pageBlock>
+                    </div>
+              
+                    <div id="left4">
+                      <apex:pageBlock tabStyle="Program__c">
+                          <apex:pageBlockSection columns="1" title="Reference Material">
+                            <apex:pageBlockSectionItem > 
+                                 <apex:image url="{!URLFOR($Resource.ctpimage, 'ctpimage/help.png')}"/> 
+                                 <apex:commandLink value="Visualforce page pdf" target="_blank" style="color:blue" />
+                            </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem > 
+                                 <apex:image url="{!URLFOR($Resource.ctpimage, 'ctpimage/help.png')}" /> 
+                                 <apex:commandLink value="Apex Code pdf" target="_blank"  style="color:blue" action="http://www.salesforce.com/us/developer/docs/apexcode/salesforce_apex_language_reference.pdf"/>
+                            </apex:pageBlockSectionItem>
+                       </apex:pageBlockSection>
+                     </apex:pageBlock>
+                   </div>
+             </div>
+             <div id="middle">
+                 <div id="middle1">
+                     <apex:pageBlock tabStyle="Program__c" id="pbfirst">
+                         <apex:pageBlockSection title="Session Status" columns="1" id="pbsfirst" >
+                            <apex:outputPanel id="uppop" layout="block" >
+                            <table width="100%"  >
+                                <tr >
+                                    <td  align="center"><b><font size="2px">Batches :</font></b>&nbsp;&nbsp;&nbsp;
+                                        <SELECT id="pList" NAME="Program_list" onchange="fromBatch(this.value);" >
+                                            <option value="Allb" >All Batches</option>               
+                                        </SELECT>
+                                    </td> 
+                                    <td align="right">
+                                        <apex:commandButton id="img"  image="{!URLFOR($Resource.CTPImages, 'Imz/refresh.png')}" title="Refresh" onclick="return refreshDet();"   style="width:10px" reRender="studentform"/>
+                                    </td>                                    
+                                </tr>
+                            </table>
+                             <table width="100%" >
+                                <tr>
+                                    <td align="left" width="80%"><apex:commandButton id="btn1" value="All Days" reRender="btn1" onclick="return fromDayStatus(this.value);"  style="height:20px;width:40px;font-size:8px;"/></td>                                    
+                                    <td align="right"><apex:commandButton id="btn2" image="{!URLFOR($Resource.backward)}" value="Past" onclick="return fromDayStatus(this.value);" reRender="btn2" style="height:12px;width:20px;" title="Past" /></td> 
+                                    <td align="right"> <apex:commandButton id="btn3" value="Today" reRender="btn3" onclick="return fromDayStatus(this.value);"  style="height:20px;width:35px;font-size:8px;"/></td> 
+                                    <td align="right"><apex:commandButton id="btn4" value="Upcoming" image="{!URLFOR($Resource.forward)}"  onclick="return fromDayStatus(this.value);"  reRender="btn4"  style="height:12px;width:20px;"  title="Upcoming"/> </td> 
+                                  
+                                </tr>
+                            </table>   
+                            <table width="100%" >
+                                <tr>
+                                    <td width="100%" align="center"><b>
+                                        <apex:selectRadio layout="lineDirection" id="radio" onchange="fromStatus(this.value);">
+                                            <apex:selectOption itemValue="All" itemLabel="All" />
+                                            <apex:selectOption itemValue="Completed" itemLabel="Completed" />
+                                            <apex:selectOption itemValue="Not Started" itemLabel="Not Started" />
+                                        </apex:selectRadio></b>
+                                    </td>
+                                </tr>
+                            </table><br/><br/> 
+                        <!--  </apex:outputPanel>                  
+                          <apex:outputPanel >                          
+                              <apex:outputPanel id="lowpb" layout="block" style="overflow:auto;height:100%;">  --> 
+                                   <center><TABLE id="dataTable" width="100%" frame='box' rules='rows' /></center>  
+                            <!--  </apex:outputPanel> -->
+                      </apex:outputPanel>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>  
+                 </div>
+             </div>             
+           </div>
+         </div>
+        <script type="text/javascript">  
+            var queryResult; 
+            var batquery;     
+            var records_batch;
+            var records_sentry;
+            var status;
+            var batvalue;
+            var dstatus;
+            var table ;
+            window.onload = setupPage;
+            function setupPage(){               
+                validateLogin();                
+                document.getElementById('studentpage:studentform:pbfirst:pbsfirst:radio:'+0).checked=true;
+                document.getElementById("pList").value="Allb";
+                document.getElementById("studentpage:studentform:pbfirst:pbsfirst:btn3").style.background='#EEF3E2';
+                status = 'All';
+                batvalue = 'Allb';
+                dstatus = 'Today';
+                batquery=sforce.connection.query("Select Id,BatchId__c,BatchId__r.Name from Student__c where UserInfoId__r.UserId__c = '{!sid}'  Limit 10");              
+                records_batch=batquery.getArray('records'); 
+                var select= document.getElementById("pList");
+                select.options.length = 1;               
+                for(var i=0;i<records_batch.length;i++){             
+                    select.options[select.options.length] = new Option(records_batch[i].BatchId__r.Name,records_batch[i].BatchId__c);                   
+                } 
+                var bId=records_batch[0].BatchId__c ;
+               // var bId=["a01U0000001jUv8IAE","a01U0000001jaVJIAY"];
+                queryResult = sforce.connection.query("Select Id,Batch__c, Comment__c, End_Time__c, Faculty__c, New_Task__c, No_Of_Hours__c, Session_Name__c, Session__c, StartDate__c, Start_Time__c, Status__c, Course_Name__c, Session_Type__c, Completed_Hour__c,Remaining_Hour__c, EndDate__c, Batch_Name__c from Sessionentry__c where Batch__c ='" + bId + "'  ");
+               //  queryResult = sforce.connection.query("Select Id,Batch__c, Comment__c, End_Time__c, Faculty__c, New_Task__c, No_Of_Hours__c, Session_Name__c, Session__c, StartDate__c, Start_Time__c, Status__c, Course_Name__c, Session_Type__c, Completed_Hour__c,Remaining_Hour__c, EndDate__c, Batch_Name__c from Sessionentry__c where Batch__c IN '"+(bId)+"'");                              
+                 records_sentry = queryResult.getArray('records'); 
+                showEntDet(); 
+                                                             
+           }
+           
+           function showEntDet(){                                 
+               table = document.getElementById("dataTable"); 
+               var rowCount = queryResult.records.length;
+               
+               if(table.rows.length > 0 ){
+                    for(var p = table.rows.length - 1; p > -1; p--)
+                        table.deleteRow(p); 
+               } 
+               
+               
+               table.insertRow(0);       
+               for(j=0;j<8;j++)                 
+                   table.rows[0].insertCell(j);               
+                table.rows[0].className  ="border";
+                table.rows[0].cells[0].innerHTML="<font size='1px' >Course Name</font>";                     
+                table.rows[0].cells[1].innerHTML="<font size='1px'>Batch Name</font>";      
+                table.rows[0].cells[2].innerHTML="<font size='1px'>Session Name</font>";       
+                table.rows[0].cells[3].innerHTML="<font size='1px'>Class Type</font>";   
+                table.rows[0].cells[4].innerHTML="<font size='1px'>Start Date</font>"; 
+                table.rows[0].cells[5].innerHTML="<font size='1px'>Start Time</font>"; 
+                table.rows[0].cells[6].innerHTML="<font size='1px'>Hours</font>"; 
+                table.rows[0].cells[7].innerHTML="<font size='1px'>Status</font>"; 
+                var count=1;                
+                for(i=0;i<rowCount;i++){
+                    if(batvalue == 'Allb'){
+                        if(status == 'All'){
+                            if(dstatus == 'All Days'){                            
+                                 table.insertRow(count);
+                                 insertData(count,i);                       
+                                 count++;
+                             }else if(dstatus == 'Today'){                                 
+                                 if(queryResult.records[i].StartDate__c == '{!today}'){                                     
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }  
+                             }else if(dstatus == 'Past'){                                 
+                                 if(queryResult.records[i].StartDate__c < '{!today}'){                                     
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }     
+                             }else if(dstatus == 'Upcoming'){
+                                 if(queryResult.records[i].StartDate__c > '{!today}'){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }     
+                             }                                 
+                         }else{     
+                             if(dstatus == 'All Days'){
+                                 if(queryResult.records[i].Status__c == status ){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }
+                             }else if(dstatus == 'Past'){                                                                   
+                                 if(queryResult.records[i].Status__c == status && queryResult.records[i].StartDate__c < '{!today}'){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++; 
+                                 }
+                             }else if(dstatus == 'Today'){
+                                 if(queryResult.records[i].Status__c == status && queryResult.records[i].StartDate__c == '{!today}'){                                     
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }      
+                             }else if(dstatus == 'Upcoming'){
+                                 if(queryResult.records[i].Status__c == status && queryResult.records[i].StartDate__c > '{!today}'){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }     
+                             }
+                         }
+                     }else if(queryResult.records[i].Batch__c == batvalue){
+                         if(status == 'All'){
+                            if(dstatus == 'All Days'){                            
+                                 table.insertRow(count);
+                                 insertData(count,i);                       
+                                 count++;
+                             }else if(dstatus == 'Today'){                                 
+                                 if(queryResult.records[i].StartDate__c == '{!today}'){                                     
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }  
+                             }else if(dstatus == 'Past'){
+                                 if(queryResult.records[i].StartDate__c < '{!today}'){                                     
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }     
+                             }else if(dstatus == 'Upcoming'){
+                                 if(queryResult.records[i].StartDate__c > '{!today}'){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }     
+                             }                                 
+                         }else{      
+                             if(dstatus == 'All Days'){
+                                 if(queryResult.records[i].Status__c == status ){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }
+                             }else if(dstatus == 'Past'){                                                                   
+                                 if(queryResult.records[i].Status__c == status && queryResult.records[i].StartDate__c < '{!today}'){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++; 
+                                 }
+                             }else if(dstatus == 'Today'){
+                                 if(queryResult.records[i].Status__c == status && queryResult.records[i].StartDate__c == '{!today}'){                                     
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }      
+                             }else if(dstatus == 'Upcoming'){
+                                 if(queryResult.records[i].Status__c == status && queryResult.records[i].StartDate__c > '{!today}'){
+                                     table.insertRow(count);
+                                     insertData(count,i);                       
+                                     count++;
+                                 }     
+                             }
+                         }
+                     }
+                 }                
+           }
+          
+           function insertData(cnt,i){               
+                if(cnt%2 == 0)
+                    table.rows[cnt].className ="even";
+                else
+                    table.rows[cnt].className ="odd";
+                table.rows[cnt].vAlign = 'middle';    
+                for(j=0;j<8;j++)                
+                    table.rows[cnt].insertCell(j); 
+                table.rows[cnt].cells[0].innerHTML=queryResult.records[i].Course_Name__c;   
+                table.rows[cnt].cells[1].innerHTML=queryResult.records[i].Batch_Name__c;     
+                table.rows[cnt].cells[2].innerHTML=queryResult.records[i].Session_Name__c;     
+                table.rows[cnt].cells[3].innerHTML=queryResult.records[i].Session_Type__c;
+                table.rows[cnt].cells[4].innerHTML=queryResult.records[i].StartDate__c;  
+                table.rows[cnt].cells[5].innerHTML=queryResult.records[i].Start_Time__c; 
+                table.rows[cnt].cells[6].innerHTML=queryResult.records[i].No_Of_Hours__c/60; 
+                table.rows[cnt].cells[7].innerHTML=queryResult.records[i].Status__c;  
+                
+           } 
+           
+           function fromBatch(batch){batvalue = batch;showEntDet();}
+           function fromStatus(st){status = st;showEntDet();}
+           function fromDayStatus(dst){
+               for(var v=1; v<5; v++){
+                   if(document.getElementById("studentpage:studentform:pbfirst:pbsfirst:btn"+v).value == dst)
+                       document.getElementById("studentpage:studentform:pbfirst:pbsfirst:btn"+v).style.background='#EEF3E2';
+                   else
+                       document.getElementById("studentpage:studentform:pbfirst:pbsfirst:btn"+v).style.background='';
+               } 
+               dstatus = dst;
+               showEntDet(); 
+               return false;               
+           }  
+           
+           function refreshDet(){
+                for(var v=1; v<5; v++){
+                   if(v == 3)
+                       document.getElementById("studentpage:studentform:pbfirst:pbsfirst:btn"+v).style.background='#F5DEB3';
+                   else
+                       document.getElementById("studentpage:studentform:pbfirst:pbsfirst:btn"+v).style.background='';
+               } 
+               setupPage();
+               return false;
+           }         
+           
+        </script>       
+  </apex:form>
+  <script src="/soap/ajax/23.0/connection.js"></script>
+</apex:page>

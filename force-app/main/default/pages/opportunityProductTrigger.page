@@ -1,0 +1,5 @@
+<apex:page controller="opportunityProductTriggerHandler" >
+    <apex:form >
+        
+    </apex:form>
+</apex:page>

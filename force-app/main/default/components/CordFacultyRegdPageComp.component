@@ -1,0 +1,261 @@
+<apex:component controller="CordFacultyRegdController" allowDML="true" id="compg">
+<apex:form >
+    <style type="text/css">
+     #commnd {text-align:center;}
+    </style>
+     <apex:pageBlock tabStyle="Faculty__c" mode="edit"  id="pgblk"> <br/>
+
+        <div id="commnd">    
+           <apex:commandButton value="New Faculty" action="{!doNewFaculty}" id="cbid" reRender="pgblk"  />  
+        </div>
+        <div width="100%" height="15px"> 
+            <table width="100%">
+                <tr>
+                   <td >
+                       <apex:commandButton value="Show All" action="{!allFaculty}" reRender="pgblk"/>
+                    </td>
+                    <td align="right" width="400px">
+                       <table  height="1%"  style="border-style:plain;  background-color:#E3DCDB ;">
+                           <tr>
+                           <td>
+                             <apex:selectList id="firstSl" multiselect="false" size="1" value="{!name}">
+                                    <apex:selectOption itemValue="Name" itemLabel="Name"/>
+                                    <apex:selectOption itemValue="fName" itemLabel="First Name"/>
+                                    <apex:selectOption itemValue="lName" itemLabel="Last Name"/>
+                                    <apex:selectOption itemValue="Email" itemLabel="Email Id"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                             <apex:selectList id="secondsl" size="1" value="{!condtion}">
+                                 <apex:selectOption itemValue="Condition" itemLabel="Condition"/>
+                                 <apex:selectOption itemValue="Equals To" itemLabel="Equals To"/>
+                                 <apex:selectOption itemValue="Like" itemLabel="Starts With"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                                <apex:inputText id="input" value="{!text}" maxlength="50" size="25" />
+                           </td>               
+                           <td>         
+                                <apex:commandButton action="{!doFilter}"  reRender="pgblk" value="Go!"  />
+                           </td>
+                         </tr>
+                       </table>     
+                   </td> 
+               </tr>
+            </table> 
+        </div><br/>
+    
+        <apex:outputPanel layout="block" style="overflow:auto; height:150px" > 
+            <apex:pageBlockTable value="{!selectFaculty}" var="selfac" width="100%"    >
+                <apex:column headerValue="Action" >
+                    <apex:commandLink value="View" style="color:blue" action="{!viewRecords}" reRender="pgblk" >  
+                       <apex:param name="delfaulty"  value="{!selfac.Id}" assignTo="{!facId}"/>   
+                    </apex:commandLink>&nbsp;&nbsp; 
+                    <apex:commandLink value="Edit" style="color:blue" action="{!editRecords}" reRender="pgblk" >  
+                       <apex:param name="delfaulty"  value="{!selfac.Id}" assignTo="{!facId}"/>   
+                    </apex:commandLink>&nbsp;&nbsp;
+                    <apex:commandLink value="Del" onclick="if(confirm('Are you sure?')){}else{return false;}" style="color:blue" action="{!deleteRecords}" reRender="pgblk" >  
+                       <apex:param name="delfaulty"  value="{!selfac.Id}" assignTo="{!facId}"/>   
+                    </apex:commandLink> 
+                </apex:column>
+                <apex:column headerValue="First Name" value="{!selfac.First_Name__c}" />
+                <apex:column headerValue="Last Name" value="{!selfac.Last_Name__c}" />
+                <apex:column headerValue="Email Id" >
+                    <apex:outputText value="{!selfac.Email_Id__c}" />
+                </apex:column>
+                <apex:column headerValue="Mob No" value="{!selfac.Mobile_No__c}" />
+            </apex:pageBlockTable>
+        </apex:outputPanel>  <br/>  <br/>
+     
+     
+        <apex:pageBlockSection title="Faculty Information" columns="2" id="pbs" rendered="{!showFaculty}">
+            <apex:pageBlockSectionItem >
+                <apex:pageMessages ></apex:pageMessages>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem id="pbsi"> 
+                <apex:outputLabel value="First Name :"  id="FN"/>
+                <apex:inputField value="{!uInfoFac.First_Name__c}" id="facn" required="true"/>    
+            </apex:pageBlockSectionItem> 
+            
+             <apex:pageBlockSectionItem id="pbsi2" >
+                <apex:outputLabel value="Last Name :" id="LN" />
+                <apex:inputField value="{!uInfoFac.Last_Name__c}" id="facln" required="true" />    
+             </apex:pageBlockSectionItem> 
+            
+              <apex:pageBlockSectionItem >
+                <apex:outputLabel value="DOB :"  />
+                <apex:inputField value="{!uInfoFac.DOB__c}" required="true"/>                                     
+            </apex:pageBlockSectionItem> 
+            
+            <apex:pageBlockSectionItem >
+               <apex:outputLabel value="Date of Joining :" />
+               <apex:inputField value="{!uInfoFac.Date_Of_Joining__c}" required="true"/>                      
+            </apex:pageBlockSectionItem>      
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Gender :" />  
+                <apex:inputField value="{!uInfoFac.Gender__c}" required="true" />
+            </apex:pageBlockSectionItem>           
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Marital Status :" />
+                <apex:inputField value="{!uInfoFac.Marital_Status__c}" />
+            </apex:pageBlockSectionItem> 
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Email ID :" />
+                <apex:outputPanel >
+                    <apex:inputField id="mailId" value="{!uInfoFac.Email_Id__c}"  required="true" />
+                    <script>
+                        if(document.getElementById('{!$Component.mailId}').value == '')
+                            document.getElementById('{!$Component.mailId}').disabled = false;
+                        else
+                            document.getElementById('{!$Component.mailId}').disabled = true;
+                    </script>
+                </apex:outputPanel>
+            </apex:pageBlockSectionItem>             
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Mobile No :" />
+                <apex:inputField value="{!uInfoFac.Mobile_No__c}" required="true" />
+            </apex:pageBlockSectionItem>
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Address :" />
+                <apex:inputTextarea value="{!uInfoFac.Address__c}" id="address" rows="4" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="City :" />
+                <apex:inputField value="{!uInfoFac.City__c}" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="State :" />
+                <apex:inputField value="{!uInfoFac.State__c}" />
+            </apex:pageBlockSectionItem>
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="PIN :" />
+                <apex:inputField value="{!uInfoFac.Pin__c}" />                    
+            </apex:pageBlockSectionItem>
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Training Experience In Years :" />                
+                <apex:inputField value="{!faculty.Training_Experience__c}"/>          
+            </apex:pageBlockSectionItem>       
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Technical Experience In Years :" />                
+                <apex:inputField value="{!faculty.Technical_Experience__c}"/>                    
+            </apex:pageBlockSectionItem>   
+           
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Work Experience :" />
+                <apex:inputTextarea value="{!faculty.Work_Experience__c}" id="workexp" rows="6"   />
+            </apex:pageBlockSectionItem>  
+                 
+           <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Courses Association :" />
+                <apex:inputField value="{!faculty.Courses_Association__c}"/>       
+            </apex:pageBlockSectionItem>  
+            
+           <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Language Known :" />
+                <apex:inputField value="{!uInfoFac.Language_Known__c}"/>  
+            </apex:pageBlockSectionItem>                                                            
+
+        </apex:pageBlockSection>
+        
+         <apex:pageBlockSection title="Faculty Information" columns="2" id="pbsview" rendered="{!viewFaculty}">
+        
+            <apex:pageBlockSectionItem > 
+                <apex:outputLabel value="First Name :"  id="FN"/>
+                <apex:outputField value="{!uInfoFac.First_Name__c}" />    
+            </apex:pageBlockSectionItem> 
+            
+             <apex:pageBlockSectionItem id="pbsi2" >
+                <apex:outputLabel value="Last Name :"  />
+                <apex:outputField value="{!uInfoFac.Last_Name__c}"  />    
+             </apex:pageBlockSectionItem> 
+            
+              <apex:pageBlockSectionItem >
+                <apex:outputLabel value="DOB :"  />
+                <apex:outputField value="{!uInfoFac.DOB__c}" />                                     
+            </apex:pageBlockSectionItem> 
+            
+            <apex:pageBlockSectionItem >
+               <apex:outputLabel value="Date of Joining :" />
+               <apex:outputField value="{!uInfoFac.Date_Of_Joining__c}" />                      
+            </apex:pageBlockSectionItem>      
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Gender :" />  
+                <apex:outputField value="{!uInfoFac.Gender__c}"  />
+            </apex:pageBlockSectionItem>           
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Marital Status :" />
+                <apex:outputText >{!uInfoFac.Marital_Status__c}</apex:outputText>
+            </apex:pageBlockSectionItem> 
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Email ID :" />
+                <apex:outputText value="{!uInfoFac.Email_Id__c}"  />                   
+            </apex:pageBlockSectionItem>             
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Mobile No :" />
+                <apex:outputField value="{!uInfoFac.Mobile_No__c}"  />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="City :" />
+                <apex:outputField value="{!uInfoFac.City__c}" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="State :" />
+                <apex:outputField value="{!uInfoFac.State__c}" />
+            </apex:pageBlockSectionItem>
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="PIN :" />
+                <apex:outputField value="{!uInfoFac.Pin__c}" />                    
+            </apex:pageBlockSectionItem>
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Training Experience In Years :" />                
+                <apex:outputField value="{!faculty.Training_Experience__c}"/>          
+            </apex:pageBlockSectionItem>       
+
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Technical Experience In Years :" />                
+                <apex:outputField value="{!faculty.Technical_Experience__c}"/>                    
+            </apex:pageBlockSectionItem>   
+                 
+           <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Courses Association :" />
+                <apex:outputField value="{!faculty.Courses_Association__c}"/>       
+            </apex:pageBlockSectionItem>  
+            
+           <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Language Known :" />
+                <apex:outputField value="{!uInfoFac.Language_Known__c}"/>  
+            </apex:pageBlockSectionItem>                                                            
+
+        </apex:pageBlockSection>
+        
+        <apex:pageBlockButtons location="bottom"  >
+            <apex:commandButton value="Edit"  action="{!editRecords}" reRender="pgblk" rendered="{!viewFaculty}"/>
+            <apex:commandButton value="Cancel"  action="{!cancelCourseDetail}"  rendered="{!viewFaculty}" reRender="pgblk"   />  
+            <apex:commandButton value="Save"  action="{!facultySavePage}" reRender="pgblk" rendered="{!showFaculty}"/>
+            <apex:actionRegion >
+                <apex:commandButton value="Cancel"  action="{!cancelCourseDetail}"  rendered="{!showFaculty}" reRender="pgblk"   />   
+            </apex:actionRegion>       
+        </apex:pageBlockButtons>   
+     </apex:pageBlock>
+    </apex:form>
+</apex:component>

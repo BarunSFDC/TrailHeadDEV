@@ -1,0 +1,287 @@
+<apex:component controller="CoStudentRegdController"  allowDML="true" id="compg" >
+<apex:form id="form">
+
+    <style type="text/css">
+        #commnd {text-align:center;}
+    </style>
+       
+    <apex:pageBlock tabStyle="Session__c" mode="edit" id="pgblk" > <br/>   
+        <div id="commnd">   
+           <apex:commandButton value="New Student" action="{!doNewStudent}" id="cbid" reRender="pgblk"  /> 
+        </div>
+
+       <div width="100%" height="15px"> 
+            <table width="100%">
+                <tr>
+                   <td >
+                       <apex:commandButton value="Show All" action="{!allStudent}" reRender="pgblk"/>
+                    </td>
+                    <td align="right" width="400px">
+                       <table  height="1%"  style="border-style:plain;  background-color:#E3DCDB ;">
+                           <tr>
+                           <td>
+                             <apex:selectList id="firstSl" multiselect="false" size="1" value="{!name}">
+                                    <apex:selectOption itemValue="Name" itemLabel="Name"/>
+                                    <apex:selectOption itemValue="fName" itemLabel="First Name"/>
+                                    <apex:selectOption itemValue="lName" itemLabel="Last Name"/>
+                                    <apex:selectOption itemValue="Email" itemLabel="Email Id"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                             <apex:selectList id="secondsl" size="1" value="{!condtion}">
+                                 <apex:selectOption itemValue="Condition" itemLabel="Condition"/>
+                                 <apex:selectOption itemValue="Equals To" itemLabel="Equals To"/>
+                                 <apex:selectOption itemValue="Like" itemLabel="Starts With"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                                <apex:inputText id="input" value="{!text}" maxlength="50" size="25" />
+                           </td>               
+                           <td>         
+                                <apex:commandButton action="{!doFilter}"  reRender="pgblk" value="Go!"  />
+                           </td>
+                         </tr>
+                       </table>     
+                   </td> 
+               </tr>
+            </table> 
+        </div><br/>   
+   
+        <apex:outputPanel layout="block" style="overflow:auto; height:150px" >
+            <apex:pageBlockTable value="{!selectStudent}" var="selstu" width="100%"    >
+                <apex:column headerValue="Action" >
+                    <apex:commandLink value="View" style="color:blue" action="{!viewRecords}" reRender="pgblk" >
+                        <apex:param name="takestudid1" value="{!selstu.Id}" assignTo="{!studId}" />
+                    </apex:commandLink> &nbsp;&nbsp;
+                    <apex:commandLink value="Edit" style="color:blue" action="{!editRecords}" reRender="pgblk" >
+                        <apex:param name="takestudid2" value="{!selstu.Id}" assignTo="{!studId}" />
+                    </apex:commandLink> &nbsp;&nbsp;
+                    <apex:commandLink value="Del" onclick="if(confirm('Are you sure?')){}else{return false;}" style="color:blue" action="{!deleteRecords}" reRender="pgblk" >
+                        <apex:param name="takestudid3" value="{!selstu.Id}" assignTo="{!studId}" />
+                    </apex:commandLink> 
+                </apex:column>
+                <apex:column headerValue="First Name" value="{!selstu.First_Name__c}" />
+                <apex:column headerValue="Last Name" value="{!selstu.Last_Name__c}" />
+                <apex:column headerValue="Email Id" >
+                    <apex:outputText value="{!selstu.Email_Id__c}" />
+                </apex:column>
+                <apex:column headerValue="Mob No" value="{!selstu.Mobile_No__c}" />
+            </apex:pageBlockTable> 
+        </apex:outputPanel> 
+        
+            <apex:actionRegion >           
+              <apex:pageBlockSection title="Student Information"  columns="2"  id="pbs" rendered="{!showStudent}"   >
+                  <apex:pageBlockSectionItem id="pbsitem1">
+                        <apex:outputLabel value="Program Name :" for="pname"/>
+                         <apex:selectList value="{!selectProgram}"  id="pname" size="1" >                   
+                            <apex:selectOption itemValue="" itemLabel="-Select-" />
+                            <apex:selectOptions value="{!programName}" />
+                                <apex:actionSupport event="onchange" action="{!crsList}"  rerender="pbs"  />
+                        </apex:selectList>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputText rendered="{!isErrorBat}"><font color="red">Please select batch.</font></apex:outputText>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem id="pbsitem2">
+                        <apex:outputLabel value="Select Course :"  for="courseName"/>
+                         <apex:selectList value="{!selectCourse}" size="1"  id="courseName" >
+                            <apex:selectOption itemValue="" itemLabel="-Select-" />
+                            <apex:selectOptions value="{!courseList}" />
+                            <apex:actionSupport event="onchange" action="{!batList}"  rerender="pbs" /> 
+                        </apex:selectList>
+                    </apex:pageBlockSectionItem>        
+                    <apex:pageBlockSectionItem id="pbsitem3">
+                         <apex:outputLabel value="Batch :" />
+                         <apex:selectList size="1" value="{!selectBatch}" id="batchName" >                   
+                             <apex:selectOption itemValue="" itemLabel="-Select-" />
+                             <apex:selectOptions value="{!batchList}" />
+                         </apex:selectList>  
+                    </apex:pageBlockSectionItem> 
+               </apex:pageBlockSection>  
+           </apex:actionRegion>
+           <apex:pageMessages ></apex:pageMessages>
+           <apex:actionRegion >
+               <apex:pageBlockSection rendered="{!showStudent}" id="midllepbs" columns="2"> 
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="EMail Id:" />
+                        <apex:outputPanel >
+                            <apex:inputfield value="{!uInfoStu.Email_Id__c}" id="mailId" required="true" />
+                            <script>
+                                if(document.getElementById('{!$Component.mailId}').value == '')
+                                    document.getElementById('{!$Component.mailId}').disabled = false;
+                                else
+                                    document.getElementById('{!$Component.mailId}').disabled = true;
+                            </script>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>  
+                    
+                    <apex:pageBlockSectionitem >           
+                        <apex:commandButton action="{!fromLead}" value="Check for Lead " rendered="{!showLead}" reRender="midllepbs,lowerpbs"/>
+                        <apex:outputText rendered="{!isError}"><font color="red"><b>Email Id Does Not Exist</b></font></apex:outputText>
+                    </apex:pageBlockSectionitem> 
+                </apex:pageBlockSection>
+           </apex:actionRegion>  
+                
+           <apex:pageBlockSection rendered="{!showStudent}" id="lowerpbs" columns="2">
+                <apex:pageBlockSectionItem id="pbsfname">
+                    <apex:outputLabel value="First Name :" for="fisrtname"   />
+                    <apex:inputField value="{!uInfoStu.First_Name__c}"   id="Fname" required="true" />
+                </apex:pageBlockSectionItem>
+               
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Last Name :" for="lastname"/>
+                    <apex:inputField value="{!uInfoStu.Last_Name__c}"  id="Lname" required="true"/>
+                </apex:pageBlockSectionItem> 
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Mobile Number :" for="mobNo"/>
+                    <apex:inputField value="{!uInfoStu.Mobile_No__c}"  id="mobNo" required="true" />   
+                </apex:pageBlockSectionItem> 
+               
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Address :" />
+                    <apex:inputTextarea value="{!uInfoStu.Address__c}" id="address" rows="4" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="City :" />
+                    <apex:inputField value="{!uInfoStu.City__c}" />
+                </apex:pageBlockSectionItem>
+               
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="State :" />
+                    <apex:inputField value="{!uInfoStu.State__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="PIN :" />
+                    <apex:inputField value="{!uInfoStu.Pin__c}"   />                   
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Highest Qualification :" for="highQua"/>
+                    <apex:inputField value="{!student.Highest_Qualification__c}" id="highQua"/>
+                </apex:pageBlockSectionItem>
+               
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Year Of Passing :" for="yearPass"/>
+                    <apex:inputField value="{!student.Year_Of_Passing__c}" id="yearPass"/>
+                </apex:pageBlockSectionItem>
+                                       
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="University :" for="university"/>
+                    <apex:inputField id="university" value="{!student.University__c}"/>
+                </apex:pageBlockSectionItem>    <br/>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Payment Type :"  for="payment"/>
+                    <apex:selectRadio value="{!student.PaymentType__c}" id="payment">
+                        <apex:selectOptions value="{!items}"/>
+                    </apex:selectRadio>
+                </apex:pageBlockSectionItem>  
+          </apex:pageBlockSection>
+
+      <apex:pageBlockSection title="Student Information" rendered="{!viewStudent}" id="lowerpbs1" columns="2">
+               <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="EMail Id:" />
+                    <apex:outputText value="{!uInfoStu.Email_Id__c}" />
+               </apex:pageBlockSectionItem>
+               <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Batch :"   />
+                    <apex:outputField value="{!student.BatchId__r.Name}"    />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="First Name :" for="fisrtname"   />
+                    <apex:outputField value="{!uInfoStu.First_Name__c}"    />
+                </apex:pageBlockSectionItem>
+               
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Last Name :" for="lastname"/>
+                    <apex:outputField value="{!uInfoStu.Last_Name__c}"  />
+                </apex:pageBlockSectionItem> 
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Mobile Number :" for="mobNo"/>
+                    <apex:outputField value="{!uInfoStu.Mobile_No__c}"   />   
+                </apex:pageBlockSectionItem> 
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="City :" />
+                    <apex:outputField value="{!uInfoStu.City__c}" />
+                </apex:pageBlockSectionItem>
+               
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="State :" />
+                    <apex:outputField value="{!uInfoStu.State__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="PIN :" />
+                    <apex:outputField value="{!uInfoStu.Pin__c}"   />                   
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Highest Qualification :" for="highQua"/>
+                    <apex:outputField value="{!student.Highest_Qualification__c}" />
+                </apex:pageBlockSectionItem>
+               
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Year Of Passing :" for="yearPass"/>
+                    <apex:outputField value="{!student.Year_Of_Passing__c}" />
+                </apex:pageBlockSectionItem>
+                                       
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="University :" for="university"/>
+                    <apex:outputField value="{!student.University__c}"/>
+                </apex:pageBlockSectionItem>    <br/>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Payment Type :"  for="payment"/>
+                    <apex:outputField value="{!student.PaymentType__c}" />
+                </apex:pageBlockSectionItem>  
+          </apex:pageBlockSection>
+        
+       
+     <!--  
+        <apex:pageBlockSection id="prgsection" title="Select Program Details" rendered="{!showStudent}" columns="1" collapsible="true" >
+           <apex:actionRegion >
+               <table  width="1050px" >
+                   <tr><apex:outputText rendered="{!isErrorBat}"><font color="red">Please select batch.</font></apex:outputText></tr>        
+                   <tr>
+                       <td align="center">
+                           <apex:outputLabel value="Program :" for="pname"/>&nbsp;&nbsp;
+                           <apex:selectList value="{!selectProgram}"  id="pname" size="1" >                   
+                                <apex:selectOptions value="{!ProgramName}" />
+                                <apex:actionSupport event="onchange"  rerender="prgsection"  />
+                            </apex:selectList>
+                       </td>
+                       <td align="center">
+                           <apex:outputLabel value="Course :"  for="courseName"/>&nbsp;&nbsp;
+                            <apex:selectList value="{!selectCourse}" size="1"  id="courseName" >
+                                <apex:selectOptions value="{!courseList}" />
+                                <apex:actionSupport event="onchange"  rerender="prgsection" /> 
+                            </apex:selectList>
+                       </td>
+                       <td align="center">
+                            <apex:outputLabel value="Batch :" />&nbsp;&nbsp;
+                            <apex:selectList size="1" value="{!selectBatch}" id="batchName" >                   
+                                 <apex:selectOptions value="{!batchList}" />
+                            </apex:selectList> 
+                       </td>
+                   </tr>
+               </table>
+            </apex:actionRegion>  
+          </apex:pageBlockSection>      --->     
+        
+          <apex:pageBlockButtons location="bottom" >
+              <apex:commandButton value="Edit" action="{!editRecords}" rendered="{!viewStudent}"  reRender="pgblk" />
+              <apex:actionRegion >
+                 <apex:commandButton value="Cancel"  action="{!cancelCourseDetail}"  rendered="{!viewStudent}" reRender="pgblk"   />   
+              </apex:actionRegion>
+              <apex:commandButton value="Save" action="{!studentSave}"  rendered="{!showStudent}"  reRender="pgblk" />
+              <apex:actionRegion >
+                 <apex:commandButton value="Cancel"  action="{!cancelCourseDetail}"  rendered="{!(showStudent)}" reRender="pgblk"   />   
+              </apex:actionRegion>
+          </apex:pageBlockButtons> 
+      </apex:pageBlock>
+
+ </apex:form>
+</apex:component>

@@ -1,0 +1,509 @@
+<apex:page id="pg"  sidebar="false" showHeader="false" > 
+<apex:form >
+   <script src="{!$Resource.Ctp_UserAuth}"></script>   
+    <div style="padding-top:4%;" >
+       <center><div id="innermain" style="border:1px solid;width:85%;background-color:#F5F5F5;">            
+           <div id="innermaintop" style="width:90%;padding-top:2%;" >
+                <table id="questmod" width="100%" >                    
+                    <tr >
+                        <td align="center" valign="top" width="25%">
+                            <table width="100%" >
+                                <tr><td>
+                                    <SELECT id="cList" NAME="Course_list" onchange="showModule(this.value);"  style="font-size:10px;width:100px;height:16px;background:#F2F9F8;" >
+                                        <option value="-Course-" >-Course-</option>               
+                                    </SELECT>
+                                </td></tr>
+                           </table><br/>
+                           <table width="100%" >
+                                <tr>
+                                    <td >
+                                        <SELECT id="sList" NAME="Session_list" onchange="showRelatedQuestion('myquestion','first');" style="font-size:10px;width:100px;height:16px;background:#F2F9F8;" >
+                                            <option value="-Module-" >-Module-</option>               
+                                        </SELECT>
+                                    </td>
+                                </tr>
+                           </table>
+                           <table width="100%">
+                               <tr><td><font color="darkBlue"><b>Select course and module for creation of questions.</b></font></td></tr>  
+                           </table>                             
+                        </td>
+                        <td width="75%" bgcolor="#ECF1EF">
+                            <table width="95%" align="center"  >
+                                <tr >                                    
+                                     <td width="40%"  ><b>                                                       
+                                           <input type="radio" id="category1" name="Simple" value="Simple" checked="true"> Simple</input>
+                                           <input type="radio" id="category2" name="Simple" value="Medium"> Medium</input>
+                                           <input type="radio" id="category3" name="Simple" value="Hard"> Hard</input>
+                                     </b></td>
+                                     <td width="30%"  align="right"><b>Rank the question :</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <SELECT id="rlist" style="font-size:10px;width:50px;height:16px;background:#F2F9F8;" >
+                                            <option value="1" >1</option> 
+                                            <option value="2" >2</option> 
+                                            <option value="3" >3</option> 
+                                            <option value="4" >4</option> 
+                                            <option value="5" >5</option>            
+                                        </SELECT>             
+                                     </td> 
+                                     <td></td>                                                
+                                 </tr>
+                            </table>
+                            <table width="95%" align="center"  >
+                                <tr>                               
+          
+                                    <td width="60%">
+                                        <textarea rows="3" id="questarea" cols="80" style="color:darkblue;" onblur="returnText();" onclick="clearText()">Feed your question here.</textarea>
+                                    </td>
+                                    <td width="40%" align="center" >
+                                        <table id="showAnswerPart" width="100%" >
+                                            <tr><td width="100%" align="center">
+                                                 <apex:commandLink value="Create answers." style="COLOR:darkblue;font-style:italic;font-size:10px;" onclick="return showAnswerDiv();"/>
+                                            </td></tr>
+                                        </table> 
+                                         <table id="dosave" width="100%"  style="display:none">
+                                            <tr><td width="50%" align="right" id="save"><apex:commandButton value="Save" style="width:50px;height:18px" onclick="return doSave();" /></td>
+                                                <td width="50%" ><apex:commandButton value="Cancel" style="width:50px;height:18px" onclick="return refresh();"/></td>                                                
+                                            </tr>
+                                        </table>
+                                    </td>                       
+                                 </tr>
+                         </table><br/>                         
+                         <table id="answersection" width="95%"  style="display:none;" align="center"  height="30px" >
+                             <tr>
+                                 <td id="addbutton"><apex:commandButton value="Add Row" style="width:70px;height:18px;" onclick="return addRow();"/></td>
+                                 <td align="right"><b> 
+                                     <input type="radio" name="radio" id="radio1" value="Single" checked="true"> Single</input>
+                                     <input type="radio" name="radio" id="radio2" value="Multiple"> Multiple</input></b>    
+                                 </td>
+                             </tr>
+                         </table>
+                         <table  id="headersection" width="95%"  rules="all" style="display:none;" height="20px" align="center">                            
+                            <tr>
+                               <td width="10%"><center><b>Option</b></center></td>
+                               <td width="70%"><center><b>Answers</b></center></td>
+                               <td width="12%"><center><b>Right Answer</b></center></td>
+                               <td width="8%"><center><b>Action</b></center></td>
+                            </tr>
+                         </table>                         
+                         <table id="answermod" width="95%" align="center" rules="all">
+                         </table>                            
+                       </td>
+                    </tr>
+                </table><br/>                 
+            </div><br/>            
+            <div  style="width:90%;padding-top:3%;" align="center"> 
+                <table width="100%" id="innermaindown" > 
+                    <tr>
+                        <td width="100%">
+                            <apex:tabPanel switchType="client"   >      
+                                 <apex:tab label="My questions" name="My questions"  style="width:130px"  ontabenter="showRelatedQuestion('myquestion','second');" >
+                                     <table id="myquestion" width="100%" bgcolor="#ECF1EF"  align="center" rules="all">
+                                     </table>
+                                 </apex:tab>
+                                 <apex:tab label="Others" name="Others" style="width:130px" ontabenter="showRelatedQuestion('others','second');">
+                                     <table id="others" width="100%" bgcolor="#ECF1EF"  align="center" rules="all">
+                                     </table>
+                                 </apex:tab>
+                            </apex:tabPanel>
+                        </td>
+                    </tr>
+                </table>        
+            </div>            
+        </div></center>
+    </div>
+</apex:form>       
+    <script type="text/javascript"> 
+        window.onload = setupPage; 
+        var queryResult;
+        var records;
+        var  qbankRes;
+        var fcid;
+        var fctype;
+        var myoptions=["a","b","c","d","e"];
+        var recordId;
+        function setupPage(){ 
+            validateLogin(); 
+            fcid = window.location.search.substr(5,18);
+            fctype= window.location.search.substr(29,3);
+            queryResult = sforce.connection.query("SELECT Id,Name,(SELECT Id,Name,CourseId__c FROM ModuleMatrixs__r) FROM Course__c");  
+            qbankRes = sforce.connection.query("SELECT Id, Name,Ctp_CoordinatorId__c,Ctp_CoordinatorId__r.UserInfoId__r.First_Name__c, Category__c, Module_Name__c, Answer__c, choice__c, Question__c, Rank__c, CourseId__r.Id, faculty_Id__c,faculty_Id__r.UserInfoId__r.First_Name__c, (SELECT Id, Name, Possible_Answer__c,Sub_Script__c FROM answerBanks__r order by Sub_Script__c) FROM Question_Bank__c order by Name Desc   limit 500 ");            
+            records = queryResult.getArray('records');            
+            var select= document.getElementById("cList");
+            select.options.length = 1;               
+            for(var i=0;i<records.length;i++)               
+                select.options[select.options.length] = new Option(records[i].Name,records[i].Id);
+        }        
+        function showModule(cId){
+            var selectmod= document.getElementById("sList");
+            selectmod.options.length = 1;              
+            for(var i=0;i<records.length;i++){ 
+                for(j=0;j<records[i].ModuleMatrixs__r.size;j++){ 
+                    if(records[i].ModuleMatrixs__r.size > 1){                       
+                        if(records[i].ModuleMatrixs__r.records[j].CourseId__c == cId)  
+                            selectmod.options[selectmod.options.length] = new Option(records[i].ModuleMatrixs__r.records[j].Name,records[i].ModuleMatrixs__r.records[j].Name); 
+                    }else
+                        selectmod.options[selectmod.options.length] = new Option(records[i].ModuleMatrixs__r.records.Name,records[i].ModuleMatrixs__r.records.Name); 
+                 }    
+             }           
+         } 
+         
+         function showRelatedQuestion(tabid,click){  
+             if(recordId != null && click=='second')  
+                 refresh();
+             var course= document.getElementById("cList").value;
+             var module= document.getElementById("sList").value;
+             var table = document.getElementById(tabid);            
+             if(table.rows.length > 0){
+                for(var p = table.rows.length - 1; p > -1; p--)
+                    table.deleteRow(p);    
+             }
+             table.insertRow(0);
+             for(j=0;j<5;j++)                  
+                table.rows[0].insertCell(j);
+             table.rows[0].style.textAlign="center";
+             table.rows[0].style.background="#EBECE4";
+             table.rows[0].style.height="22px"; 
+             table.rows[0].cells[0].style.width="5%";
+             table.rows[0].cells[0].innerHTML="<font size='1px' ><b>Sr No.</b></font>"; 
+             table.rows[0].cells[1].style.width="60%";                    
+             table.rows[0].cells[1].innerHTML="<font size='1px'><b>Questions</b></font>";  
+             table.rows[0].cells[2].style.width="10%";    
+             table.rows[0].cells[2].innerHTML="<font size='1px'><b>Rank</b></font>"; 
+             table.rows[0].cells[3].style.width="15%";    
+             table.rows[0].cells[3].innerHTML="<font size='1px'><b>Author</b></font>"; 
+             table.rows[0].cells[4].style.width="10%";    
+             table.rows[0].cells[4].innerHTML="<font size='1px'><b>Action</b></font>"; 
+             var count=1;
+             var qrc = qbankRes.getArray('records');
+             var rowCount = qbankRes.records.length;
+             for(i=0;i<rowCount;i++){             
+                 if(course == qrc[i].CourseId__r.Id && module==qrc[i].Module_Name__c){                                          
+                     if(tabid =='myquestion'){  
+                         console.log(qrc[i].faculty_Id__c);
+                         if(fctype == 'Fac' && qrc[i].faculty_Id__c !=null && qrc[i].faculty_Id__c == fcid){                             
+                             table.insertRow(count); 
+                             for(j=0;j<5;j++)                  
+                                 table.rows[count].insertCell(j);
+                             tabDetails(count,tabid,i);
+                             table.rows[count].cells[3].innerHTML=qrc[i].faculty_Id__r.UserInfoId__r.First_Name__c;
+                             count++;
+                         }else if(fctype == 'Coo' && qrc[i].Ctp_CoordinatorId__c !=null && qrc[i].Ctp_CoordinatorId__c == fcid){
+                             table.insertRow(count); 
+                             for(j=0;j<5;j++)                  
+                                 table.rows[count].insertCell(j);
+                             tabDetails(count,tabid,i);
+                             table.rows[count].cells[3].innerHTML=qrc[i].Ctp_CoordinatorId__r.UserInfoId__r.First_Name__c;
+                             count++;
+                         }
+                     }else if(tabid =='others'){
+                        if(fctype == 'Fac'  && qrc[i].faculty_Id__c != fcid){
+                             table.insertRow(count); 
+                             for(j=0;j<5;j++)                  
+                                 table.rows[count].insertCell(j);
+                             tabDetails(count,tabid,i);
+                             if(qrc[i].faculty_Id__c == null)
+                                 table.rows[count].cells[3].innerHTML=qrc[i].Ctp_CoordinatorId__r.UserInfoId__r.First_Name__c;
+                             else
+                                 table.rows[count].cells[3].innerHTML=qrc[i].faculty_Id__r.UserInfoId__r.First_Name__c;
+                             count++;
+                        }else if(fctype == 'Coo'  && qrc[i].Ctp_CoordinatorId__c != fcid){
+                             table.insertRow(count); 
+                             for(j=0;j<5;j++)                  
+                                 table.rows[count].insertCell(j);
+                             tabDetails(count,tabid,i);
+                             if(qrc[i].Ctp_CoordinatorId__c == null)
+                                 table.rows[count].cells[3].innerHTML=qrc[i].faculty_Id__r.UserInfoId__r.First_Name__c;
+                             else
+                                 table.rows[count].cells[3].innerHTML=qrc[i].Ctp_CoordinatorId__r.UserInfoId__r.First_Name__c;
+                             count++;
+                        }
+                     }                    
+                 }                 
+             }     
+             if(fctype == 'Fac' && tabid == 'others')
+                 document.getElementById("save").style.visibility="hidden";
+             else
+                 document.getElementById("save").style.visibility="visible";           
+         }
+         
+         function tabDetails(count,tabid,i){
+             var table = document.getElementById(tabid); 
+             var qrc = qbankRes.getArray('records');
+             table.rows[count].cells[1].id=qrc[i].Id;    
+             table.rows[count].cells[1].style.cursor="pointer"; 
+             table.rows[count].cells[1].onclick=function(){showRec(this.id,tabid);}    
+             table.rows[count].cells[1].title="Click to see details.";
+             table.rows[count].style.background="#ECF1EF";   
+             table.rows[count].style.height="18px";  
+             table.rows[count].cells[0].style.textAlign="center";    
+             table.rows[count].cells[0].innerHTML=count;    
+             if(qrc[i].Question__c != null && qrc[i].Question__c.length > 70)                         
+                 table.rows[count].cells[1].innerHTML=qrc[i].Question__c.substr(0,70)+'...';
+             else
+                 table.rows[count].cells[1].innerHTML=qrc[i].Question__c;
+             table.rows[count].cells[2].style.textAlign="center";
+             table.rows[count].cells[2].innerHTML=qrc[i].Rank__c;
+             table.rows[count].cells[3].style.textAlign="center"; 
+             table.rows[count].cells[4].style.textAlign="center";
+             table.rows[count].cells[4].innerHTML="<img id="+qrc[i].Id+tabid+" src='{!$Resource.deleteImage}' onclick='return deleteRec(this.id,"+count+","+i+");'  title='Delete' style='cursor:pointer;'/>";                      
+         }
+         
+         function showRec(recid,tabid){
+            var table = document.getElementById("answermod");  
+            recordId = recid;            
+            if(table.rows.length > 0){
+               for(var p = table.rows.length - 1; p > -1; p--)
+                   table.deleteRow(p);    
+            }
+            var qrc = qbankRes.getArray('records');
+            var rowCount = qbankRes.records.length; 
+            document.getElementById("dosave").style.display="table";
+            document.getElementById("answersection").style.display="table";
+            document.getElementById("headersection").style.display="table";
+            document.getElementById("showAnswerPart").style.display="none"; 
+            document.getElementById("answermod").style.display="table";      
+            for(i=0;i<rowCount;i++){             
+                if(qrc[i].Id == recid){
+                    for(var k=1;k<4;k++)
+                        if(document.getElementById("category"+k).value == qrc[i].Category__c)    
+                             document.getElementById("category"+k).checked=true; 
+                    document.getElementById("rlist").value=qrc[i].Rank__c;                     
+                    document.getElementById("questarea").value=qrc[i].Question__c;                    
+                    if(qrc[i].choice__c == 'Single')
+                        document.getElementById("radio1").checked=true;
+                    else
+                        document.getElementById("radio2").checked=true;
+                    for(j=0;j<qrc[i].answerBanks__r.size;j++){
+                         table.insertRow(j);                 
+                         for(k=0;k<4;k++)                  
+                            table.rows[j].insertCell(k);
+                         table.rows[j].style.textAlign="center";                                                 
+                         table.rows[j].cells[0].style.width="10%"; 
+                         table.rows[j].cells[1].style.width="70%";
+                         table.rows[j].cells[2].style.width="12%";                         
+                         table.rows[j].cells[3].style.width="8%"; 
+                         table.rows[j].cells[0].innerHTML=qrc[i].answerBanks__r.records[j].Sub_Script__c+".";
+                         table.rows[j].cells[1].innerHTML="<textarea id=area"+j+" rows='1' cols='65' style='height:15px;font-size:10px;'>"+qrc[i].answerBanks__r.records[j].Possible_Answer__c+"</textarea>";
+                         if(qrc[i].Answer__c.length == 1){
+                             if(qrc[i].Answer__c == qrc[i].answerBanks__r.records[j].Sub_Script__c)
+                                 table.rows[j].cells[2].innerHTML="<input type='checkbox' id=check"+j+" checked='true'/>";
+                             else
+                                 table.rows[j].cells[2].innerHTML="<input type='checkbox' id=check"+j+" />";
+                         }else{
+                             if(qrc[i].Answer__c.search(qrc[i].answerBanks__r.records[j].Sub_Script__c) != -1)
+                                 table.rows[j].cells[2].innerHTML="<input type='checkbox' id=check"+j+" checked='true'/>";
+                             else
+                                 table.rows[j].cells[2].innerHTML="<input type='checkbox' id=check"+j+" />";
+                         }
+                         table.rows[j].cells[3].id="r"+j;
+                         table.rows[j].cells[3].innerHTML="<img  style='cursor:pointer' src='{!$Resource.deleteImage}' onclick='return removeRec(this.parentNode.id);'/>";        
+                    }
+                 }
+              } 
+              if(fctype == 'Fac' && tabid == 'others'){                  
+                 document.getElementById("questarea").readOnly=true;
+                 for(var r=0;r<table.rows.length;r++)
+                    document.getElementById("area"+r).readOnly=true; 
+              }else{    
+                 document.getElementById("questarea").readOnly=false;
+                 for(var t=0;t<table.rows.length;t++)
+                     document.getElementById("area"+t).readOnly=false; 
+             }                
+         }
+         
+         function showAnswerDiv(){
+             if(document.getElementById("cList").value=='-Course-' || document.getElementById("sList").value == '-Module-')
+                 alert('Select Course and module.');
+             else if(document.getElementById("questarea").value == "Feed your question here." || document.getElementById("questarea").value == '')
+                 alert('Create the question first.');
+             else
+                 duplicateRefresh();
+             return false;    
+         }
+         
+         function duplicateRefresh(){
+             recordId = null;
+             document.getElementById("dosave").style.display="table";
+             document.getElementById("answersection").style.display="table";
+             document.getElementById("headersection").style.display="table";
+             document.getElementById("showAnswerPart").style.display="none"; 
+             document.getElementById("answermod").style.display="table";    
+             anserModule(3); 
+         }
+         
+         function deleteRec(rowid,rowno,dbrowno){
+            var qrc = qbankRes.getArray('records');
+            var rowCount = qbankRes.records.length; 
+            var recid=rowid.substr(0,18);
+            var tabid=rowid.substr(18,rowid.length);
+            var table = document.getElementById(tabid); 
+            table.deleteRow(rowno);                   
+            for(i=0;i<rowCount;i++)             
+                if(qrc[i].Id == recid)
+                    sforce.connection.deleteIds([qrc[i].Id]);
+            qbankRes.records.splice(dbrowno,1); 
+            showRelatedQuestion(tabid,'second');
+            refresh();        
+            return false;
+         }
+         
+         function clearText(){
+             if(document.getElementById("questarea").value == "Feed your question here.")
+                 document.getElementById("questarea").value='';                 
+         }
+         
+         function returnText(){
+             if(document.getElementById("questarea").value.length == 0)
+                 document.getElementById("questarea").value="Feed your question here.";
+         }
+         
+         function anserModule(count){             
+             var table = document.getElementById("answermod");              
+             if(table.rows.length > 0){
+                for(var p = table.rows.length - 1; p > -1; p--)
+                    table.deleteRow(p);    
+             }
+             for(j=0;j<count;j++){
+                 table.insertRow(j);                 
+                 for(k=0;k<4;k++)                  
+                    table.rows[j].insertCell(k);  
+                 rowDet(table,j);
+             }
+         }
+         
+         function rowDet(table,i){             
+             table.rows[i].style.textAlign="center";                                                 
+             table.rows[i].cells[0].style.width="10%"; 
+             table.rows[i].cells[1].style.width="70%";
+             table.rows[i].cells[2].style.width="12%";                         
+             table.rows[i].cells[3].style.width="8%";                  
+             table.rows[i].cells[0].innerHTML=myoptions[i]+".";
+             table.rows[i].cells[1].innerHTML="<textarea id=area"+i+" rows='1' cols='65' style='height:15px;font-size:10px;'></textarea>";
+             table.rows[i].cells[2].innerHTML="<input type='checkbox' id=check"+i+" />";
+             table.rows[i].cells[3].id="r"+i;
+             table.rows[i].cells[3].innerHTML="<img  style='cursor:pointer' src='{!$Resource.deleteImage}' onclick='return removeRec(this.parentNode.id);'/>";
+         }
+         
+         function addRow(){
+             var table = document.getElementById("answermod");
+             table.insertRow(table.rows.length);
+             for(k=0;k<4;k++)                  
+                table.rows[table.rows.length-1].insertCell(k); 
+             rowDet(table,table.rows.length-1);
+             if(table.rows.length == 5) 
+                 document.getElementById("addbutton").style.visibility="hidden";
+             return false;
+         } 
+         
+         function removeRec(rid){
+             var rowno=parseInt(rid.substr(1,2));
+             var table = document.getElementById("answermod");
+             if(table.rows.length == 3)
+                 alert('At least three possibled answers should be there.');
+             else{
+                 table.deleteRow(rowno);    
+                 for(p=0;p<table.rows.length;p++){
+                     table.rows[p].cells[3].id="r"+p; 
+                     table.rows[p].cells[1].firstChild.id="area"+p;
+                     table.rows[p].cells[2].firstChild.id="check"+p; 
+                     table.rows[p].cells[0].innerHTML=myoptions[p]+".";
+                 }
+                 document.getElementById("addbutton").style.visibility="visible";
+             }
+             return false;
+         }
+         
+         function doSave(){
+             var table = document.getElementById("answermod");
+             var scripts;  
+             var category;    
+             var choice;   
+             for(var k=1;k<4;k++)
+                if(document.getElementById("category"+k).checked)    
+                     category=document.getElementById("category"+k).value; 
+             for(i=0;i<table.rows.length;i++){
+                 if(document.getElementById("check"+i).checked){
+                     if(document.getElementById("area"+i).value == ''){
+                         alert('Please check the answered record.');
+                         return false;
+                     }else if(scripts == null)
+                         scripts=myoptions[i];
+                     else
+                         scripts += ","+myoptions[i];
+                 }
+             }
+             
+             if(document.getElementById("cList").value == '-Course-' || document.getElementById("cList").value == '-Module-'){
+                 alert('Select Module Name.');
+                 return false;
+             }else if(document.getElementById("questarea").value == '' || document.getElementById("questarea").value == 'Feed your question here.'){
+                 alert('Create the question first');
+                 return false;
+             }
+                  
+             if(scripts != null){
+                 if(document.getElementById("radio1").checked){
+                     choice=document.getElementById("radio1").value;
+                     if(scripts.length >1){
+                         alert('Select Only one.');
+                         return false;
+                     }
+                 }else{
+                     choice=document.getElementById("radio2").value;
+                     if(scripts.length == 1){
+                          alert('Select more than one answer.');
+                          return false;
+                     }
+                 }                     
+             }else{
+                 alert('Check right answer.'); 
+                 return false;
+             }
+             
+             //create new Question_Bank__c.
+             var create_quest=new sforce.SObject("Question_Bank__c");;
+             if(recordId != null){                 
+                 create_quest.Id=recordId;
+                 sforce.connection.deleteIds([create_quest.Id]);   
+             }
+             create_quest=new sforce.SObject("Question_Bank__c");
+             create_quest.CourseId__c = document.getElementById("cList").value;
+             create_quest.Module_Name__c=document.getElementById("sList").value;             
+             create_quest.choice__c=choice;
+             create_quest.Question__c=document.getElementById("questarea").value;            
+             create_quest.Rank__c=document.getElementById("rlist").value;
+             create_quest.Answer__c=scripts;
+             create_quest.Category__c=category;
+             if(fctype == 'Fac')
+                 create_quest.faculty_Id__c=fcid;
+             else
+                 create_quest.Ctp_CoordinatorId__c=fcid;
+             var qban = sforce.connection.create([create_quest]);
+             
+             //create new answer related to Question_Bank__c.
+             for(p=0;p<table.rows.length;p++){
+                 var create_ans=new sforce.SObject("Answer_Bank__c");
+                 create_ans.QuestionId__c=qban[0].id;
+                 create_ans.Possible_Answer__c=document.getElementById("area"+p).value;
+                 create_ans.Sub_Script__c=myoptions[p];
+                 sforce.connection.create([create_ans]); 
+             }        
+             refresh();
+             qbankRes = null;
+             qbankRes = sforce.connection.query("SELECT Id, Name,Ctp_CoordinatorId__c,Ctp_CoordinatorId__r.UserInfoId__r.First_Name__c, Category__c, Module_Name__c, Answer__c, choice__c, Question__c, Rank__c, CourseId__r.Id, faculty_Id__c,faculty_Id__r.UserInfoId__r.First_Name__c, (SELECT Id, Name, Possible_Answer__c, Sub_Script__c FROM answerBanks__r order by Sub_Script__c) FROM Question_Bank__c order by Name Desc   limit 500 ");            
+             showRelatedQuestion('myquestion','second');  
+             return false;
+         }
+         
+         function refresh(){
+             recordId=null;
+             document.getElementById("questarea").value ='';
+             document.getElementById("category1").checked=true;
+             document.getElementById("rlist").value ='1';
+             document.getElementById("radio1").checked=true;
+             anserModule(3);
+             return false;
+         }
+         
+    </script>     
+    <script src="/soap/ajax/23.0/connection.js"></script> 
+</apex:page>

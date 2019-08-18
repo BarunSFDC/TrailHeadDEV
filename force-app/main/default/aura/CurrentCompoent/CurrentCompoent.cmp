@@ -1,0 +1,5 @@
+<aura:component access="global">
+    <aura:handler event="SureshOrg:quizEvent" action="{!c.myAction}"/>
+    <a href="https://ctpnew-dev-ed.lightning.force.com/SureshOrg/QuizApplication.app">Application</a>
+	
+</aura:component>

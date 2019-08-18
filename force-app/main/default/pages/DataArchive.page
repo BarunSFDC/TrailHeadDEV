@@ -1,0 +1,112 @@
+<apex:page controller="DataArchiveController" docType="html-5.0" StandardStylesheets="false" applyHtmlTag="false" showHeader="false" applyBodyTag="false" >
+    <html>
+        <head>
+            <apex:includeScript value="{!URLFOR($Resource.Bootstrap, 'Bootstrap/jquery-ui-1.8.20/js/jquery-1.7.2.min.js')}"/>
+            <apex:stylesheet value="{!URLFOR($Resource.Bootstrap, 'Bootstrap/Bootstrap/css/bootstrap.css')}"/>
+            <apex:includeScript value="{!URLFOR($Resource.Bootstrap, 'Bootstrap/Bootstrap/bootstrap.min.js')}"/>                      
+            
+            <style>
+                .clickable{
+                    cursor: pointer;   
+                }
+                
+                .panel-heading span {
+                    margin-top: -20px;
+                    font-size: 15px;
+                }
+                
+                .box {
+                    display:block;
+                    width: 200px;
+                    height:100px;
+                    background-color:#DDD;
+                }                                
+               
+            </style>
+            
+            <script>
+                $(document).on('click', '.panel-heading span.clickable', function(e){
+                    var $this = $(this);
+                    if(!$this.hasClass('panel-collapsed')) {
+                        $this.parents('.panel').find('.panel-body').slideUp();
+                        $this.addClass('panel-collapsed');
+                        $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+                    } else {
+                        $this.parents('.panel').find('.panel-body').slideDown();
+                        $this.removeClass('panel-collapsed');
+                        $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+                    }
+                }); 
+                
+                function proceedToArchival(){
+                    console.log($('#searchableFeilds').val()); 
+                    console.log($('#selectedObject').val()); 
+                    $('.objectAPI').val($('#selectedObject').val());
+                    $('.fields').val($('#searchableFeilds').val());
+                    $('.startArchivalProcess').click();                      
+                }
+                
+                
+            </script>
+            
+        </head>
+        
+        <body>
+            <apex:form id="fm">
+                <nav class="navbar navbar-default" >
+                    <div class="container-fluid">
+                        <div class="navbar-header">
+                            <a class="navbar-brand" ><b>123 Data Archival</b></a>
+                        </div>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="/{!$User.Id}"><span class="glyphicon glyphicon-user"></span> {!$User.FirstName} {!$User.LastName}</a></li>
+                            <li><a href="/home/home.jsp"><span class="glyphicon glyphicon-circle-arrow-left"></span> Back to home</a></li>
+                            <li><a href="/secur/logout.jsp"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+                        </ul>                                                                                                
+                    </div>
+                </nav>
+                
+                <div class="col-xs-12">
+                
+                     <div class = "panel panel-primary">
+                        <div class = "panel-heading">
+                            <h3 class = "panel-title">Configuration</h3>
+                            <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                        </div>
+                        <div class = "panel-body">
+                        
+                            <div class="form-group row" >
+                                <label for="selectedObject" class="col-sm-1 form-control-label">Object</label>
+                                <div class="col-sm-3">
+                                    <select class="form-control" id="selectedObject">
+                                        <option label="Select" value="select"/>  
+                                        <apex:repeat value="{!objectAPINames}" var="obj">
+                                            <option value="{!obj}" label="{!obj}"/>
+                                        </apex:repeat>
+                                    </select>
+                                </div> 
+                                <label for="searchableFeilds" class="col-sm-1 form-control-label">Searchable Fields</label>
+                                <div class="col-sm-3">
+                                    <input type="text" class="form-control" id="searchableFeilds" placeholder="Field API Names"/>
+                                </div>
+                                <div class="col-sm-3">
+                                   <span>
+                                       <button type="button" class="btn btn-info btn-sm" onclick="proceedToArchival();" style="display:inline;" id="validateData"><b>Proceed</b></button>
+                                   </span>
+                                   <span id="dvLoading" class="dvLoading" style="display:none;">
+                                       <img src="/img/loading32.gif" class="waitingImage" title="Please Wait..." style="margin-bottom : 0px; height: 26px;width: 25px;"/>
+                                   </span>
+                               </div> 
+                               <apex:inputText value="{!objectAPIName}" styleClass="objectAPI" style="display:none;"/>
+                               <apex:inputText value="{!searchableFields}" styleClass="fields" style="display:none;"/>  
+                               <apex:commandButton action="{!startArchivalProcess}" styleClass="startArchivalProcess" style="display:none;"/>                             
+                            </div>                                                                                       
+                        </div>
+                    </div>                                                                                                
+                </div>
+                
+            </apex:form>
+        </body>
+        
+    </html>
+</apex:page>

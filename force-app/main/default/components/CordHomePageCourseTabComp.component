@@ -1,0 +1,205 @@
+<apex:component controller="CoHomePageCourTabContlr" id="compg1" allowDML="true" >
+<apex:form id="fm">
+<style type="text/css">
+ #commnd {text-align:center;}    
+</style>
+    <link rel="stylesheet" href="{!URLFOR($Resource.Jtreeview,'/jquery.treeview.css')}"/>
+        <link rel="stylesheet" href="{!URLFOR($Resource.Jtreeview,'/screen.css')}" />
+    <!--    <script src="{!URLFOR($Resource.Jtreeview,'/jquery.js')}" type="text/javascript"></script> -->
+      
+        <script src="{!URLFOR($Resource.Jtreeview,'/jquery.cookie.js')}" type="text/javascript"></script> 
+        <script src="{!URLFOR($Resource.Jtreeview,'/jquery.treeview.js')}" type="text/javascript"></script>  
+
+    <apex:pageBlock tabStyle="Session__c" mode="edit" id="pgblk"   > <br/>
+        <apex:actionRegion >
+            <apex:actionFunction name="deleteMod" action="{!deleteModule}"  reRender="pgb2" >
+                <apex:param name="rowIdx1" assignTo="{!countmod}" value="" />
+            </apex:actionFunction> 
+             <apex:actionFunction name="deleteSes" action="{!deleteSession}" reRender="pgb2" >
+                <apex:param name="rowIdx2" assignTo="{!countses}" value="" />
+            </apex:actionFunction> 
+        </apex:actionRegion> 
+        <div id="commnd">    
+           <apex:commandButton value="New Course" action="{!doNewCourse}" id="cbid" reRender="pgblk"  />  
+        </div>       
+        <div width="100%" height="15px"> 
+            <table width="100%">
+                <tr>
+                    <td >
+                       <apex:commandButton value="Show All" action="{!allCourses}" reRender="pgblk"/>
+                    </td>
+                    <td align="right" width="400px">
+                       <table  height="1%"  style="border-style:plain;  background-color:#E3DCDB;">
+                           <tr>
+                           <td>
+                             <apex:selectList id="firstSl" multiselect="false" size="1" value="{!name}">
+                                    <apex:selectOption itemValue="Name" itemLabel="Name"/>
+                                    <apex:selectOption itemValue="Program" itemLabel="Program Name"/>
+                                    <apex:selectOption itemValue="Course" itemLabel="Course Name"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                             <apex:selectList id="secondsl" size="1" value="{!condtion}">
+                                 <apex:selectOption itemValue="Condition" itemLabel="Condition"/>
+                                 <apex:selectOption itemValue="Equals To" itemLabel="Equals To"/>
+                                 <apex:selectOption itemValue="Like" itemLabel="Starts With"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                                <apex:inputText id="input" value="{!text}" maxlength="50" size="25" />
+                           </td>               
+                           <td>         
+                                <apex:commandButton action="{!doFilter}"  reRender="pgblk" value="Go!"  />
+                           </td>
+                         </tr>
+                       </table>     
+                   </td> 
+               </tr>
+            </table> 
+        </div><br/>
+            
+        <apex:outputPanel layout="block" style="overflow:auto; height:150px" > 
+            <apex:pageBlockTable id="pbtbl" value="{!selectCors}" var="selcor"  width="100%" >
+                <apex:column headerValue="Action" rowspan="1" >
+                     <apex:commandLink value="View" style="color:blue" action="{!showSessionDetails}" reRender="pgblk">
+                       <apex:param name="takecid1" value="{!selcor.Id}" assignTo="{!courseId}"/>
+                     </apex:commandLink> &nbsp;&nbsp; 
+                      
+                     <apex:commandLink value="Edit" style="color:blue" action="{!editCoursreDetails}" reRender="pgblk">
+                       <apex:param name="takecid2" value="{!selcor.Id}" assignTo="{!courseId}"/>
+                     </apex:commandLink> &nbsp;&nbsp;
+                    
+                     <apex:commandLink id="clinkdel" value="Del" style="color:blue" action="{!deleteCourseRecords}" onclick="if(confirm('Related Sessions will be deleted,Sure?')){}else{return false;}" reRender="pgblk">
+                       <apex:param name="takecid3" value="{!selcor.Id}" assignTo="{!courseId}"/>
+                     </apex:commandLink>
+                 </apex:column>
+                <apex:column headerValue="Program Name">
+                    <apex:inputField value="{!selcor.ProgramId__c}"  />
+                </apex:column>
+                <apex:column headerValue="Course Name" value="{!selcor.Name}" />                
+            </apex:pageBlockTable>    
+        </apex:outputPanel> <br/>  
+        
+        <apex:pageBlock id="pgb2" title="Course Details" rendered="{!courseDetails1}" >                 
+            <apex:pageBlock title="New Course"  id="pgb21" rendered="{!courseDetails2}">                 
+                 <apex:pageBlockSection columns="1">
+                        <apex:pageBlockSectionItem id="pbsi"> 
+                            <apex:outputLabel value="Program Name :"  id="FN"/>
+                            <apex:inputField value="{!cours.ProgramId__c}" id="facn" required="true" />    
+                        </apex:pageBlockSectionItem> 
+                        
+                     <!--   <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Passing Percent :"  />
+                            <apex:inputField value="{!cours.Passing_Mark__c}"  />                                        
+                        </apex:pageBlockSectionItem>                        
+                        <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>      -->                   
+                        <apex:pageBlockSectionItem id="pbsi2" >
+                            <apex:outputLabel value="Course Name :" id="LN" />
+                            <apex:inputField value="{!cours.Name}" id="corsn" required="true" />    
+                        </apex:pageBlockSectionItem>                         
+                      <!--   <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Total Questions :"  />
+                            <apex:inputField value="{!cours.Total_Questions__c}"  />                                        
+                        </apex:pageBlockSectionItem>   
+                        
+                        <apex:pageBlockSectionItem ></apex:pageBlockSectionItem> -->
+                        
+                         <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Course Fees :"  />
+                            <apex:inputField value="{!cours.Course_Fees__c}"  />                                        
+                        </apex:pageBlockSectionItem>  
+                  </apex:pageBlockSection>
+                  <apex:OutputText rendered="{!isError}"><center><font color="red" size="3">{!errorMessage}</font></center></apex:OutputText> 
+             </apex:pageBlock>
+            
+            <apex:pageBlock tabStyle="Session__c" title="Sessions" id="pgb3" rendered="{!courseDetails2}">
+            <apex:tabPanel switchType="client" id="tp" selectedTab="Module" tabClass="activeTab" inactiveTabClass="inactiveTab">      
+                 <apex:tab label="Module" name="Module" id="tb1" labelWidth="150px" >
+                     <apex:commandButton value="Add Module" action="{!addNewModule}" reRender="pgblk" />  
+                     <apex:variable value="{!0}" var="rowIdx1"/>
+                       <div style="overflow:auto; height:180px">
+                        <apex:pageBlockTable value="{!modList}" var="mod" id="pgbtbl1" >
+                            <apex:column style="width:80px"> 
+                               <apex:outputPanel >
+                                  <center> <apex:image style="cursor:pointer" value="{!$Resource.deleteImage}" onclick="if(confirm('Related Sessions will be deleted,Sure?')){deleteMod({!rowIdx1})}else{return false;}" title="Delete"  alt="Del" /></center>
+                               </apex:outputPanel>
+                               <apex:variable var="rowIdx1" value="{!rowIdx1+1}"/> 
+                            </apex:column>
+                            <apex:column headerValue="Module Name" style="width:250px">
+                                <apex:inputField value="{!mod.Name}" style="width:100px" required="true" />
+                            </apex:column>
+                            <apex:column headerValue="Amount of question in %">
+                                <apex:inputField value="{!mod.percent_for_qset__c}" style="width:50px"/>
+                            </apex:column> 
+                    </apex:pageBlockTable>
+                   </div>
+                 </apex:tab>
+                 <apex:tab label="Session" name="Session" id="tb2"  labelWidth="150px" >                    
+                     <apex:commandButton value="Add Session" action="{!addNewSession}" reRender="pgblk" />
+                     <apex:variable value="{!0}" var="rowIdx2"/>  
+                       <div style="overflow:auto; height:180px">
+                         <apex:pageBlockTable value="{!selectsess}" var="ssn" id="pgbtbl2"  >                      
+                               <apex:column > 
+                                   <apex:outputPanel >
+                                     <center><apex:image style="cursor:pointer" value="{!$Resource.deleteImage}" onclick="deleteSes({!rowIdx2});" title="Delete"  alt="Del" /></center>
+                                   </apex:outputPanel>
+                                   <apex:variable var="rowIdx2" value="{!rowIdx2+1}"/> 
+                               </apex:column>
+                               <apex:column headerValue="Session Name" style="width:250px"> 
+                                 <apex:inputField value="{!ssn.sess.Session_Name__c}" style="width:150px"/>
+                               </apex:column> 
+                               <apex:column headerValue="Session Type" >
+                                 <apex:selectList size="1"  value="{!ssn.sess.Session_Type__c}">
+                                     <apex:selectOptions value="{!fieldValues}"  />
+                                 </apex:selectList> 
+                              </apex:column>                            
+                              <apex:column headerValue="Duration in Hour" style="width:250px">
+                                 <apex:inputField id="inpfld" value="{!ssn.sess.Duration_In_Hour__c}" style="width:50px"  /> 
+                              </apex:column>
+                              
+                              <apex:column headerValue="Module Name" >
+                                 <apex:selectList size="1" value="{!ssn.modName}">
+                                     <apex:selectOption itemLabel="-select-" itemValue="" />
+                                     <apex:selectOptions value="{!moduleList}" />                               
+                                 </apex:selectList> 
+                              </apex:column>                   
+                         </apex:pageBlockTable>  
+                     </div>                 
+                 </apex:tab>
+             </apex:tabPanel>
+             <apex:pageBlockButtons location="bottom">
+                     <apex:commandButton value="Save" action="{!saveCourse}"  reRender="pgblk" />
+                     <apex:actionRegion >
+                        <apex:commandButton value="cancel"  action="{!cancelCourseDetail}"   reRender="pgblk"   />
+                    </apex:actionRegion>
+             </apex:pageBlockButtons>          
+          </apex:pageBlock> <br/>  
+         
+          <apex:pageBlock id="pgb22" title="Course"   rendered="{!showcourse}">
+                <apex:pageBlockTable value="{!selectCourse}" var="selcor" width="100%" >                    
+                    <apex:column headerValue="Course Name" value="{!selcor.Name}" />
+                    <apex:column headerValue="Course Fees" value="{!selcor.Course_Fees__c}"/>
+                    <apex:column headerValue="Start Date" value="{!selcor.CreatedDate}" />
+                  <!--  <apex:column headerValue="Passing Percent" value="{!selcor.Passing_Mark__c}" />
+                    <apex:column headerValue="Total Questions per set" value="{!selcor.Total_Questions__c}" />
+                -->
+                </apex:pageBlockTable>  
+          </apex:pageBlock> 
+          
+          <apex:pageBlock tabStyle="Session__c" title="Sessions" id="pgb4" rendered="{!showcourse}">
+             <apex:pageBlockTable value="{!selectsess}" var="ssn"   > 
+                 <apex:column headerValue="Session Name" value="{!ssn.sess.Session_Name__c}" />
+                 <apex:column headerValue="Session Type"  value="{!ssn.sess.Session_Type__c}" />
+                 <apex:column headerValue="Duration in Hour" value="{!ssn.sess.Duration_In_Hour__c}"   /> 
+                 <apex:column headerValue="Module Name" value="{!ssn.sess.Module_Name__c}"   />
+             </apex:pageBlockTable>  <br/>
+             <apex:pageBlockButtons location="bottom">
+                 <apex:commandButton value="Edit" action="{!editCoursreDetails}" reRender="pgblk" rendered="{!showcourse}"/> 
+                 <apex:commandButton value="Cancel" action="{!cancelCourseDetail}"   reRender="pgblk" rendered="{!showcourse}"/>   
+             </apex:pageBlockButtons> 
+         </apex:pageBlock> <br/>
+       </apex:pageblock> 
+     </apex:pageBlock>     
+  
+</apex:form>
+</apex:component>

@@ -1,0 +1,31 @@
+<apex:page tabStyle="Account">
+<style type="text/css">
+  .pbSubheader h3{
+   color: red;
+  }  
+   </style>
+ <apex:form >
+     <apex:pageBlock title="Main Block" mode="edit" >
+         <apex:pageBlockSection title="Test Button"  columns="1" >
+         </apex:pageBlockSection>
+     </apex:pageBlock>
+     <apex:pageBlock title="dsfds" mode="edit">
+         <apex:pageBlockSection title="efefe" columns="1">
+         gbbghbghghv
+         </apex:pageBlockSection>
+     </apex:pageBlock>
+     
+      <table border="1" width="50%">
+          <tr height="20px"><td></td></tr>
+          <tr><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td></tr>
+      </table>
+     
+     <script language="javascript">
+        window.onload=init;
+        function init(){
+            document.getElementsByClassName('pbHeader')[0].innerHTML="<span><button>Save</button></span>";
+        }                
+     </script>
+ </apex:form>
+</apex:page>

@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "baseUrl": ".",
+        "paths": {
+            "c/fullcalendar": [
+                "../staticresources/fullcalendar_148/fullcalendar/fullcalendar.js"
+            ],
+            "c/leaflet": [
+                "../staticresources/leaflet/leaflet.js"
+            ],
+            "c/nouislider": [
+                "../staticresources/nouislider/nouislider.js"
+            ]
+        }
+    },
+    "include": [
+        "**/*",
+        "../../../../.sfdx/typings/lwc/**/*.d.ts"
+    ],
+    "typeAcquisition": {
+        "include": [
+            "jest"
+        ]
+    }
+}

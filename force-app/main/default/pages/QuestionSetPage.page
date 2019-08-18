@@ -1,0 +1,182 @@
+<apex:page controller="TestQsetRepeat" id="pg" sidebar="false" showHeader="false">
+<apex:form id="fm">
+   <!-- <apex:actionFunction name="goController" action="{!qSetDetails}" reRender="qset,errmsg"/>
+    <apex:actionFunction name="goController1" action="{!moduleDetails}" reRender="ShowHistory"  /> -->
+    <style type="text/css">
+        #top{ width:1150px;height:700px; padding-left:100px; background-color:#3090C7;padding-top:10px;}
+        #accordionex {width:1000px;height:640px;float:center;padding-right:1%;padding-left:10px;}      
+        #acctop{width:925px;height:180px;float:center;background-color:#9898CD;padding-right:25px;padding-left:40px;padding-top:10px;}   
+        #acctopleft{width:245px;height:150px;float:left;background-color:#E6E6E6;padding-left:25px;padding-top:25px;}
+        #acctopright{width:630px;height:175px;float:right;background-color:#E6E6E6}     
+        #accordionexleft{width:500px;height:450px;padding-left:3px;float:left;}
+        #accordionexright{width:480px;height:450px;float:right;}
+        #selectedq{width:470px;height:8px;padding-left:5px;} 
+        #selectedqlft{width:380px;height:8px;float:left;} 
+        #selectedqrght{width:80px;height:8px;float:right;} 
+    </style>
+    
+    <div id="top">
+    <div id="accordionex"><br/>         
+           <div id="acctop" style="align:center">
+              <div id="acctopleft">
+                    <table ><br/><br/>
+                        <tr><td width="60px" height="30px"><b><span>Program :</span></b></td>
+                            <td width="70px"><apex:selectList value="{!selectedProgram}" size="1" >
+                                <apex:selectOption itemValue="" itemLabel="-select-" />
+                                <apex:selectOptions value="{!programName}"  />
+                                <apex:actionSupport event="onchange" action="{!courseDetails}" reRender="courseName"/>
+                            </apex:selectList>  
+                            </td> 
+                        </tr> 
+                        <tr><td width="60px"><b><span>Course :</span></b></td>
+                            <td width="70px"><apex:selectList value="{!selectedcourse}" size="1"  id="courseName" >
+                                    <apex:selectOption itemValue="" itemLabel="-select-" />
+                                    <apex:selectOptions value="{!courseName}"  />
+                                    <apex:actionSupport event="onchange" oncomplete="showset();" action="{!qSetDetails}" reRender="pb1,pbsleft"/>
+                                </apex:selectList>  
+                            </td> 
+                        </tr>  
+                        <tr>
+                            <td>
+                                <apex:outputPanel id="errmsg">
+                                    <apex:outputText rendered="{!isError}" ><font color="red" size="3"><I>{!errorMessage}</I></font></apex:outputText>                      
+                                </apex:outputPanel> 
+                            </td>
+                        </tr>
+                    </table><br/>               
+                </div>
+                <div id="acctopright">
+                    <div id="nonexist"><br/><br/><b><center><font size="4px">Select Program and course.</font></center></b></div>
+                    <div id="exist">                        
+                        <apex:pageBlock id="pb1" >
+                            <table>
+                                <tr>
+                                   <td width="580px"><apex:commandButton value="Create New" action="{!newQSet}" reRender="pb1"/> </td>
+                                   <td ><apex:commandButton value="Cancel" action="{!refresh}" reRender="pb1"/> </td>  
+                                </tr>
+                            </table>
+                            <apex:outputPanel id="updtable" layout="block" style="overflow:auto; height:130px;">         
+                                <apex:pageblockTable value="{!qSetDet}" var="vas" id="pbt" >
+                                    <apex:column headerValue="Action" rowspan="1" width="80px">
+                                         <apex:commandLink value="View" style="color:blue" action="{!showQSet}" oncomplete="showdiv();"  rendered="{!if(vas.addNew == true,false,true)}" reRender="pb1,pb2,pb3">
+                                             <apex:param name="takecid1" value="{!vas.qstList.Id}" assignTo="{!vas.setId}"/>
+                                         </apex:commandLink> &nbsp;&nbsp; 
+                                          
+                                         <apex:commandLink value="Edit" style="color:blue" action="{!editQSet}"  rendered="{!if(vas.addNew == true,false,true)}" reRender="pb1,pb2,pb3">
+                                            <apex:param name="takecid2" value="{!vas.qstList.Id}" assignTo="{!vas.setId}"/>
+                                         </apex:commandLink> &nbsp;&nbsp;
+                                        
+                                         <apex:commandLink id="clinkdel" value="Del" style="color:blue"  action="{!deleteQSet}" rendered="{!if(vas.addNew == true,false,true)}" onclick="if(confirm('Related Sessions will be deleted,Sure?')){}else{return false;}" reRender="pb1,pb2,pb3">
+                                            <apex:param name="takecid3" value="{!vas.qstList.Id}" assignTo="{!vas.setId}"/>
+                                         </apex:commandLink>
+                                    </apex:column>
+                                    <apex:column headerValue="Set Name" width="150px">
+                                        <apex:outputField rendered="{!vas.editfield}" value="{!vas.qstList.Name}"/>
+                                        <apex:inputField rendered="{!!vas.editfield}" value="{!vas.qstList.Name}" style="font-size:12px;height:15px;width:100px"/>&nbsp;&nbsp;
+                                        <apex:outputText rendered="{!!vas.editfield}"><b>Ex.Set1</b></apex:outputText>
+                                    </apex:column>
+                                    <apex:column headerValue="Passing %" >
+                                        <apex:outputField rendered="{!vas.editfield}" value="{!vas.qstList.Passing_Mark__c}"/>
+                                        <apex:inputField rendered="{!!vas.editfield}" value="{!vas.qstList.Passing_Mark__c}" style="font-size:12px;height:15px;width:60px"/>
+                                    </apex:column>
+                                    <apex:column headerValue="No Of Questions">
+                                        <apex:outputField rendered="{!vas.editfield}" value="{!vas.qstList.Total_Questions__c}"/>
+                                        <apex:inputField rendered="{!!vas.editfield}" value="{!vas.qstList.Total_Questions__c}" style="font-size:12px;height:15px;width:60px"/>
+                                    </apex:column>
+                                    <apex:column headerValue="Set Time(min)" >
+                                        <apex:outputField rendered="{!vas.editfield}" value="{!vas.qstList.Exam_Duration_in_minute__c}"/>
+                                        <apex:inputField rendered="{!!vas.editfield}" value="{!vas.qstList.Exam_Duration_in_minute__c}" style="width:60px"/>
+                                    </apex:column>
+                                    <apex:column >
+                                        <center>
+                                               <apex:image value="{!URLFOR($Resource.Save)}"  rendered="{!!vas.editfield}"  style="height:15px;width:15px;cursor:pointer;" title="Save"  >
+                                                   <apex:actionSupport event="onclick" action="{!saveRecord}" reRender="pb1,pb2,pb3" >
+                                                       <apex:param name="setid" value="{!vas.qstList.Id}" assignTo="{!vas.setId}"/>
+                                                   </apex:actionSupport>        
+                                               </apex:image>
+                                        </center>  
+                                    </apex:column>
+                                </apex:pageblockTable> 
+                            </apex:outputPanel>
+                        </apex:pageBlock>
+                    </div>
+                </div>
+        </div> <br/> 
+        
+        <apex:outputPanel id="ShowHistory">     
+        <div id="accordionexleft" >           
+           <apex:pageBlock id="pb2" tabStyle="Program__c" title="Question Bank" >               
+               <div  style="overflow:auto; height:400px; width:460px">
+                    <apex:repeat value="{!repeatQBankList}" var="rlist" >
+                        <apex:pageBlockSection id="pbsleft" title="{!rlist.crsName}({!rlist.modName})" columns="1" > 
+                           <div id="selectedq">
+                                <div id="selectedqlft"><i><font color="#035DFA"><b>You have to select {!rlist.qstrength} questions from this block.</b></font></i></div>
+                                <div id="selectedqrght"><i><font color="blue">{!rlist.selrec}/{!rlist.qbanList.size}</font></i></div>
+                            </div>
+                            <apex:dataTable value="{!rlist.qbanList}" var="qst"  cellpadding="6">
+                               <apex:column style="padding-top: 4px">
+                                   <apex:inputCheckbox value="{!qst.selectcheck}" >
+                                       <apex:actionSupport event="onclick" action="{!selected}" rerender="pbsleft,pbsright"/>
+                                   </apex:inputCheckbox>
+                               </apex:column>
+                               <apex:column value="{!qst.qban.Question__c}"/>
+                            </apex:dataTable>  
+                        </apex:pageBlockSection>
+                   </apex:repeat>
+               </div>
+           </apex:pageBlock>
+           </div>
+           <div id="accordionexright" class="ui-widget-content">   
+               <apex:pageBlock tabStyle="Program__c" title="{!pblockTitle}" id="pb3"   >
+                   <div  style="overflow:auto; height:400px; width:460px"> 
+                       <apex:repeat value="{!repeatQBankList}" var="rlist">                           
+                           <apex:pageBlockSection title="{!rlist.crsName}({!rlist.modName})" columns="1" id="pbsright" > 
+                              <apex:outputText id="errmsg" rendered="{!rlist.isError}"><font color="red"><b>{!errorMessage}</b></font></apex:outputText>                               
+                               <apex:dataTable value="{!rlist.qsetList}" var="qst"  cellpadding="6">
+                                   <apex:column value="{!qst.counter}."/>
+                                   <apex:column value="{!qst.qset.Question__c}"/>
+                               </apex:dataTable>  
+                           </apex:pageBlockSection>
+                       </apex:repeat>
+                  </div>
+             </apex:pageBlock>
+             <center> <apex:commandButton value="Save"  id="savebttn" action="{!saveQSet}"   reRender="fm"/>
+                      <apex:commandButton value="Cancel"   onclick="return refresh();" reRender="fm"/>
+             </center>            
+          </div>
+           </apex:outputPanel> 
+    </div>
+  </div>
+  
+   <script LANGUAGE="JavaScript">
+      window.onload = setup;
+      function setup(){
+          document.getElementById('accordionexleft').style.display = "none";
+          document.getElementById("accordionexright").style.display="none";
+          document.getElementById("exist").style.display="none";       
+          document.getElementById("nonexist").style.display="block";   
+      } 
+      
+      function showset(){
+          document.getElementById('accordionexleft').style.display = "none";
+          document.getElementById("accordionexright").style.display="none";
+          document.getElementById("exist").style.display="block";       
+          document.getElementById("nonexist").style.display="none";   
+      }
+      
+      function showdiv(){
+          document.getElementById("nonexist").style.display="none";   
+          document.getElementById('accordionexleft').style.display = "block";
+          document.getElementById("accordionexright").style.display="block";          
+      }
+      
+      function refresh(){
+          document.getElementById('accordionexleft').style.display = "none";
+          document.getElementById("accordionexright").style.display="none";
+          document.getElementById("nonexist").style.display="none"; 
+          return false;
+      }
+  </script> 
+
+</apex:form>    
+</apex:page>

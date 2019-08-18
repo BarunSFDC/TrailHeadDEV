@@ -1,0 +1,309 @@
+<apex:page id="pg" sidebar="false" controller="Ctp_Feedback" >       
+  <div id="main" style="width:100%">
+      <div id="top" style="width:100%">
+          <apex:image value="{!URLFOR($Resource.CtpLogo)}" width="8%" height="60" /> &nbsp;&nbsp;&nbsp; 
+          <apex:image value="{!URLFOR($Resource.CTPImages, 'Imz/MainHeader.png')}" width="90%" height="60"/>
+      </div><br/>
+      <div align="center" style="width:100%"><font size="3px"><b> Training Feedback Form</b></font></div><br/>
+       <apex:form id="fm">
+         <apex:actionFunction name="goController" action="{!saveFeedBackForm}" reRender="btn">
+             <apex:param name="sendlist1" assignTo="{!totssnList}" value=""/>
+             <apex:param name="sendlist2" assignTo="{!totRadioList}" value=""/>
+             <apex:param name="sendlist3" assignTo="{!recomend}" value=""/>
+         </apex:actionFunction>
+         <table width="90%" rules="all" align="center" >
+             <tr>
+                 <td width="10%"><b>Course Name :</b></td>
+                 <td width="50%">
+                     <apex:selectList size="1" value="{!crsName}">
+                         <apex:selectOption itemLabel="-select-" itemValue="-select-" />
+                         <apex:selectOptions value="{!crsList}" />
+                     </apex:selectList>
+                 </td>
+                 <td width="8%"><b>Faculty Name :</b></td>
+                 <td>
+                     <apex:selectList size="1" value="{!facName}">
+                         <apex:selectOption itemLabel="-select-" itemValue="" />
+                         <apex:selectOptions value="{!facList}" />
+                     </apex:selectList>
+                 </td>             
+             </tr>
+             <tr>
+                 <td><b>Session Name :</b></td>
+                 <td>
+                     <table width="100%">
+                         <tr>
+                             <td >
+                                 <SELECT id="totsList" NAME="Session_list1"  multiple="multiple"  size="4" >
+                                 </SELECT>
+                             </td>
+                             <td width="10%" align="center">
+                                 <apex:commandButton onclick="return onselectList();" image="{!URLFOR($Resource.CtpImz, 'ctpimg/forwards.png')}"  style="width:16px;height:10px;" title="Add" />                             
+                             </td>
+                             <td>
+                                 <Input type="text" id="selslist" style="width:350px" />
+                             </td>
+                         </tr>
+                     </table>
+                 </td>
+                 <td><b>Duration(hrs) :</b></td>
+                 <td><apex:inputfield value="{!cff.fed_Duration_hrs__c}" style="width:100px;"  /></td>
+             </tr>
+             <tr>
+                 <td><b>Training Date :</b></td>
+                 <td ><b>From :</b><apex:inputfield value="{!cff.fed_Training_from_date__c}" style="width:100px;"  />&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+                     <b>To:</b><apex:inputfield value="{!cff.fed_Training_to_date__c}" style="width:100px;" />
+                 </td>
+                 <td/><td/>
+             </tr>
+         </table><br/>
+       <center><div align="center"  style="width:90%;height:16px;background-color:silver;padding-top:5px;"><font size="3px"><b> Participant's Feedback</b></font></div><br/></center>
+        <div align="center" style="width:90%;"><i>Please select the radio button against the rating in the corresponding column</i></div>
+        <div align="center" style="width:90%;"><i><b>Note:5 stands for Excellent and 1 for poor</b></i></div>
+        <table width="90%" align="center" rules="all">
+            <tr bgcolor="silver">
+                <td width="50%"><font size="2px"><center><b>Aspect</b></center></font></td>
+                <td> <table  width="100%">
+                        <tr><td><center><b><u>Rating</u></b></center></td></tr>
+                    </table>
+                    <table  width="100%">
+                        <tr align="center" >
+                            <td width="16%"><b>NA</b></td><td  width="16%"><b>5</b></td><td  width="16%"><b>4</b></td><td  width="16%"><b>3</b></td><td  width="16%"><b>2</b></td><td  width="16%"><b>1</b></td>
+                        </tr>
+                    </table> 
+                </td>    
+            </tr>        
+        </table> 
+         <table width="90%" align="center" rules="all">
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Relevance of Course</font></td>
+                <td align="center"><input type="radio" name="group1" value="0" /></td>
+                <td align="center"><input type="radio" name="group1" value="5" / ></td>
+                <td align="center"><input type="radio" name="group1" value="4" /></td>
+                <td align="center"><input type="radio" name="group1" value="3" /></td>
+                <td align="center"><input type="radio" name="group1" value="2" /></td>
+                <td align="center"><input type="radio" name="group1" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Clarity of Course Objectives</font></td>
+                <td align="center"><input type="radio" name="group2" value="0" /></td>
+                <td align="center"><input type="radio" name="group2" value="5" / ></td>
+                <td align="center"><input type="radio" name="group2" value="4" /></td>
+                <td align="center"><input type="radio" name="group2" value="3" /></td>
+                <td align="center"><input type="radio" name="group2" value="2" /></td>
+                <td align="center"><input type="radio" name="group2" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Quality of Excercises</font></td>
+                <td align="center"><input type="radio" name="group3" value="0" /></td>
+                <td align="center"><input type="radio" name="group3" value="5" / ></td>
+                <td align="center"><input type="radio" name="group3" value="4" /></td>
+                <td align="center"><input type="radio" name="group3" value="3" /></td>
+                <td align="center"><input type="radio" name="group3" value="2" /></td>
+                <td align="center"><input type="radio" name="group3" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Hands on Exposure</font></td>
+                <td align="center"><input type="radio" name="group4" value="0" /></td>
+                <td align="center"><input type="radio" name="group4" value="5" / ></td>
+                <td align="center"><input type="radio" name="group4" value="4" /></td>
+                <td align="center"><input type="radio" name="group4" value="3" /></td>
+                <td align="center"><input type="radio" name="group4" value="2" /></td>
+                <td align="center"><input type="radio" name="group4" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Adequate Lab Support</font></td>
+                <td align="center"><input type="radio" name="group5" value="0" /></td>
+                <td align="center"><input type="radio" name="group5" vMorealue="5" / ></td>
+                <td align="center"><input type="radio" name="group5" value="4" /></td>
+                <td align="center"><input type="radio" name="group5" value="3" /></td>
+                <td align="center"><input type="radio" name="group5" value="2" /></td>
+                <td align="center"><input type="radio" name="group5" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Facilities</font></td>
+                <td align="center"><input type="radio" name="group6" value="0" /></td>
+                <td align="center"><input type="radio" name="group6" value="5" / ></td>
+                <td align="center"><input type="radio" name="group6" value="4" /></td>
+                <td align="center"><input type="radio" name="group6" value="3" /></td>
+                <td align="center"><input type="radio" name="group6" value="2" /></td>
+                <td align="center"><input type="radio" name="group6" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Effectiveness of Faculty to meet Course Objectives</font></td>
+                <td align="center"><input type="radio" name="group7" value="0" /></td>
+                <td align="center"><input type="radio" name="group7" value="5" / ></td>
+                <td align="center"><input type="radio" name="group7" value="4" /></td>
+                <td align="center"><input type="radio" name="group7" value="3" /></td>
+                <td align="center"><input type="radio" name="group7" value="2" /></td>
+                <td align="center"><input type="radio" name="group7" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Transfer of Knowledge</font></td>
+                <td align="center"><input type="radio" name="group8" value="0" /></td>
+                <td align="center"><input type="radio" name="group8" value="5" / ></td>
+                <td align="center"><input type="radio" name="group8" value="4" /></td>
+                <td align="center"><input type="radio" name="group8" value="3" /></td>
+                <td align="center"><input type="radio" name="group8" value="2" /></td>
+                <td align="center"><input type="radio" name="group8" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Level of Interaction and Participation</font></td>
+                <td align="center"><input type="radio" name="group9" value="0" /></td>
+                <td align="center"><input type="radio" name="group9" value="5" / ></td>
+                <td align="center"><input type="radio" name="group9" value="4" /></td>
+                <td align="center"><input type="radio" name="group9" value="3" /></td>
+                <td align="center"><input type="radio" name="group9" value="2" /></td>
+                <td align="center"><input type="radio" name="group9" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Presentation of Material</font></td>
+                <td align="center"><input type="radio" name="group10" value="0" /></td>
+                <td align="center"><input type="radio" name="group10" value="5" / ></td>
+                <td align="center"><input type="radio" name="group10" value="4" /></td>
+                <td align="center"><input type="radio" name="group10" value="3" /></td>
+                <td align="center"><input type="radio" name="group10" value="2" /></td>
+                <td align="center"><input type="radio" name="group10" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Presentation of Trainer</font></td>
+                <td align="center"><input type="radio" name="group11" value="0" /></td>
+                <td align="center"><input type="radio" name="group11" value="5" / ></td>
+                <td align="center"><input type="radio" name="group11" value="4" /></td>
+                <td align="center"><input type="radio" name="group11" value="3" /></td>
+                <td align="center"><input type="radio" name="group11" value="2" /></td>
+                <td align="center"><input type="radio" name="group11" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Overall Rating of the Trainer</font></td>
+                <td align="center"><input type="radio" name="group12" value="0" /></td>
+                <td align="center"><input type="radio" name="group12" value="5" / ></td>
+                <td align="center"><input type="radio" name="group12" value="4" /></td>
+                <td align="center"><input type="radio" name="group12" value="3" /></td>
+                <td align="center"><input type="radio" name="group12" value="2" /></td>
+                <td align="center"><input type="radio" name="group12" value="1" /></td>
+            </tr>
+            <tr>
+                <td width="50%" height="20px"><font size="2px">Where your overall expectation met?</font></td>
+                <td align="center"><input type="radio" name="group13" value="0" /></td>
+                <td align="center"><input type="radio" name="group13" value="5" / ></td>
+                <td align="center"><input type="radio" name="group13" value="4" /></td>
+                <td align="center"><input type="radio" name="group13" value="3" /></td>
+                <td align="center"><input type="radio" name="group13" value="2" /></td>
+                <td align="center"><input type="radio" name="group13" value="1" /></td>
+            </tr>
+        </table><br/>
+        <table width="90%" align="center" rules="all">
+            <tr ><td height="20px" bgcolor="silver">
+                <center><font size="3px"><b> Descriptive Opinion</b></font><br/></center>
+            </td></tr>
+            <tr><td>
+                <font size="2px"><b>&nbsp;&nbsp;What did you like the most in this course?</b></font><br/>&nbsp;&nbsp;
+                <apex:inputTextarea value="{!cff.fed_Course_Like__c}" cols="100"/>
+            </td></tr>
+            <tr><td>
+                <font size="2px"><b>&nbsp;&nbsp;What did you like the least in this course?How could this be imroved?</b></font><br/>&nbsp;&nbsp;
+                <apex:inputTextarea value="{!cff.fed_Course_Dislike__c}" cols="100"/>
+            </td></tr>  
+            <tr><td>
+                <font size="2px"><b>&nbsp;&nbsp;Other comments/Suggestions</b></font><br/>&nbsp;&nbsp;
+                <apex:inputTextarea value="{!cff.fed_Comments__c}" cols="100"/>
+            </td></tr>
+            <tr><td width="25px">
+                <font size="2px"><b>&nbsp;&nbsp;Would you recommend this program to others?&nbsp;&nbsp;
+                <input type="radio" name="group14" value="yes" >Yes</input>
+                <input type="radio" name="group14" value="no" >No</input>
+                <span  id="sdate" style="float:right;padding-top:5px;" ></span></b></font>
+            </td></tr>      
+        </table><br/> 
+        <table width="100%">
+            <tr>
+                <td id="btn1" width="50%" align="right">
+                    <apex:commandButton id="btn1"  value="Save" onclick="return submitForm();"  style="width:60px" />
+                </td>
+                <td id="btn2" width="50%" >
+                    <apex:commandButton id="btn2"  value="Submit" action="{!sendPdf}"  style="width:60px;" reRender="btn"/>
+                </td> 
+            </tr>
+        </table>    
+     <script type="text/javascript">
+          window.onload=setup;
+          var selectp;
+          function setup(){      
+             document.getElementById("btn2").style.visibility = 'hidden';        
+             var now = new Date(); 
+             var hours = now.getHours(); 
+             selectp= document.getElementById("totsList");       
+             selectp.options.length = 0;                 
+             var then ='Date :'+' '+ now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate(); 
+                  then += ' '+now.getHours()+':'+now.getMinutes();
+             if(hours > 11)          
+                 document.getElementById("sdate").innerHTML= then+' '+'PM';
+             else
+                 document.getElementById("sdate").innerHTML= then+' '+'AM';
+             
+             var newlist='{!ssname}'.slice(1,'{!ssname}'.length-1);
+             var ssarray=newlist.split(',');
+             for(i=0;i<{!ssname.size};i++)
+                 selectp.options[selectp.options.length] = new Option(ssarray[i],ssarray[i]);  
+          } 
+          
+          function onselectList(){
+              for(i=0;i<{!ssname.size};i++)
+                  if(selectp[i].selected == true){ 
+                      if(document.getElementById("selslist").value == '')                 
+                          document.getElementById("selslist").value = selectp[i].value;
+                      else if(document.getElementById("selslist").value.search(selectp[i].value) == -1)
+                          document.getElementById("selslist").value = document.getElementById("selslist").value+','+selectp[i].value; 
+                  }
+              return false;
+          }
+          function submitForm(){              
+              var radiolist=[];
+              var flag;
+              var recomend;
+              for(j=1;j<14;j++){
+                  flag=false;
+                  for(i=0;i<6;i++){
+                      if(document.getElementsByName("group"+j)[i].checked == true){
+                          radiolist.push(document.getElementsByName("group1")[i].value);
+                          flag = true;
+                          break;
+                      }
+                  }
+                  if(flag == false)
+                      break;
+              }
+              var sendradio ='new';
+              for(k=0;k<radiolist.length;k++){
+                  if(sendradio == 'new')
+                      sendradio = radiolist[k];
+                  else          
+                      sendradio=sendradio+','+radiolist[k];
+              }
+              if(document.getElementsByName("group14")[0].checked == true)
+                  recomend = 'Yes';
+              else if(document.getElementsByName("group14")[1].checked == true)
+                  recomend = 'No';
+              else
+                  recomend = 'null';
+              
+              if(flag == false)    
+                  alert('Please check all the Aspect ratings.');
+              else{
+                  document.getElementById("pg:fm:btn2").style.visibility = 'visible';
+                  goController(document.getElementById("selslist").value,sendradio,recomend);                     
+              } 
+              abc();                  
+              return false;
+          }      
+          
+          function abc(){
+              document.getElementById("btn2").style.visibility = 'visible'; 
+              document.getElementById("btn1").style.visibility = 'hidden'; 
+          }
+          
+      </script> 
+   </apex:form>
+   </div> 
+</apex:page>

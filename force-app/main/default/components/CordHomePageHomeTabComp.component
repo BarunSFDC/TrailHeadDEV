@@ -1,0 +1,675 @@
+<apex:component controller="CordHomePageHomeTabContr" allowDML="true"  id="compg" >   
+    <script src="{!$Resource.Ctp_UserAuth}"></script>
+    <apex:form id="fm">       
+      <apex:actionFunction name="goController" action="{!entryDetails}" reRender="innerpb,showmsg" status="myStatus1">
+          <apex:param name="batchId1" assignTo="{!selectedBatch}" value=""/>
+          <apex:param name="batchId2" assignTo="{!status}" value=""/>
+          <apex:param name="batchId3" assignTo="{!showAll}" value=""/>
+      </apex:actionFunction>
+    <apex:actionFunction name="updateFaculty" action="{!saveSessEntry}"  status="myStatus2"   reRender="innerpb,showmsg" >  
+        <apex:param name="fid" assignTo="{!faId }" value=""/>
+        <apex:param name="fid1" assignTo="{!rownum}" value=""/>
+    </apex:actionFunction>  
+    <apex:actionFunction name="changePassword" action="{!saveChangedPassword}" oncomplete="pwdChangedStatus();" reRender="pbs">
+        <apex:param name="sendpwd" assignTo="{!cnfrmpwd}" value=""/>
+    </apex:actionFunction>
+    
+    <style type="text/css">
+         #body{width: 100%;height: 75%;}
+         #left{width: 25%;height: 100%;float:left;}         
+         #middle{width:73%;height: 100%;float:left;;padding-left:2%;} 
+         #left1{width: 100%;height:25%;padding-bottom: 10px;}         
+         #left2{width: 100%;height:25%;padding-bottom: 10px;}
+         #left3{width: 100%;height: 150px;}
+         #middle1{width:100%;height:100%;padding-bottom:10px;float:center;}         
+         #poc{width:70%;height:100%;padding-bottom: 10px;float:center;}        
+         #log{text-align:right;font-weight:bold;padding-right:0.5%;}  
+         .odd {background-color: #FCF7F7;height:20px;}
+         .even {background-color: #E3DCDB;height:20px;}
+         .border{background-color:#E3F3FF;height:20px;font-weight:bold;margin-left:-1px;padding:10px;}
+         .selected{background-color:#F5F6CE;padding-top:5px;height:15px;}  
+            
+    </style>
+    <div id="main">
+     <div id="body">
+        <div id="leftmiddlelr" style="width:25%" >
+            <table width="100%" >
+                    <tr>
+                        <td id="opnbtn" style="display:none" align="left"><apex:image value="{!URLFOR($Resource.CtpImz, 'ctpimg/dobule_arrow_right.jpg')}" onclick="return opendiv();" style="cursor:e-resize;width:18px;height:12px;color:silver;" /></td>                                   
+                        <td id="clsbtn"  align="right"><apex:image value="{!URLFOR($Resource.CtpImz, 'ctpimg/dobule_arrow_left.jpg')}"  onclick="return closediv();" style="cursor:w-resize;width:18px;height:12px;color:silver;"  /></td>                                  
+                    </tr>
+                </table>
+        </div> 
+        <div id="left">          
+            <div id="left1"> 
+                <apex:pageBlock id="pblefttop" tabStyle="Program__c"  >
+                <apex:pageBlockSection title="My Profile" id="pbs" columns="1"  > 
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Welcome" />
+                        <apex:outputText value="{!cord.UserInfoId__r.First_Name__c} {!cord.UserInfoId__r.Last_Name__c}" style="color:violet; font-weight:bold; font-size:12px" /> 
+                    </apex:pageBlockSectionItem> 
+                    <apex:pageBlockSectionItem >
+                        <apex:image url="{!URLFOR($Resource.CTPImages, 'Imz/Mail.gif')}" />
+                        <apex:outputText >{!cord.UserInfoId__r.Email_Id__c}</apex:outputText>
+                    </apex:pageBlockSectionItem>    
+                    <apex:pageBlockSectionItem >
+                        <apex:image url="{!URLFOR($Resource.CTPImages, 'Imz/PhoneIcon.gif')}" />
+                        <apex:outputText >{!cord.UserInfoId__r.Mobile_No__c}</apex:outputText>
+                    </apex:pageBlockSectionItem> 
+              </apex:pageBlockSection>   
+               <table  width="100%" height="100%"><tr><td align="right">
+                     <apex:image id="more" value="{!URLFOR($Resource.CtpImz, 'ctpimg/more.jpg')}" onclick="return cordDet();" style="cursor:pointer;width:15px;height:15px;" title="More" />
+                     <apex:image id="less" value="{!URLFOR($Resource.CtpImz, 'ctpimg/less.png')}" onclick="return homePage();" style="display:none;cursor:pointer;width:16px;height:15px;" title="Go home page" /> 
+               </td></tr></table>             
+            </apex:pageBlock>
+          </div>            
+          <div id="left2">
+            <apex:pageBlock tabStyle="Program__c" id="pb1">
+                <apex:pageBlockSection title="Course"  id="pbs3" columns="1"  >
+                    <apex:pageBlockSectionItem id="pbsi3"  >
+                        <apex:outputLabel value="Select Program:" for="pname" />
+                        <apex:outputPanel >
+                            <table width="100%" >
+                                <tr><td >
+                                        <SELECT id="pList" NAME="Program_list" onchange="showCourse();" >
+                                            <option value="" >--Select--</option>               
+                                        </SELECT>
+                                    </td>     
+                                   <td align="right"> <apex:commandButton id="img1" image="{!URLFOR($Resource.CTPImages, 'Imz/refresh.png')}" onclick="refreshPrgCrs();"  title="Refresh ! if any changes made in course tab." style="width:10px"   reRender="img1" /> </td>
+                               </tr>
+                            </table>
+                        </apex:outputPanel>                 
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem id="pbsi4" >
+                       <apex:outputLabel value="Select Course:"  />
+                         <apex:outputPanel id="courseName">
+                            <SELECT id="sList" NAME="Course_list" onchange="showBatch('dataTable');" >
+                                <option value="" >--Select--</option>               
+                            </SELECT>           
+                            <apex:inputHidden id="inHiddencId" value="{!seletedCors}" />                                                      
+                             <apex:actionStatus stopText="" id="myStatus">
+                                    <apex:facet name="start">
+                                        <img src="/img/loading.gif" />
+                                    </apex:facet>
+                            </apex:actionStatus>   
+                         </apex:outputPanel> 
+                    </apex:pageBlockSectionItem>                                      
+                 </apex:pageBlockSection>
+               </apex:pageBlock> 
+            </div>  
+            <div id="left3">
+                <apex:pageBlock tabStyle="Program__c" >
+                    <apex:pageBlockSection title="Examination Details" columns="1" >
+                       <apex:outputLink value="/apex/Ctp_Create_QustionAnswer" target="_blank" >
+                           <font color="blue">Create Questions</font>
+                           <apex:param name="fid" value="{!cord.Id}"/>
+                           <apex:param name="type" value="{!cord.UserInfoId__r.Type__c}"/>
+                       </apex:outputLink>
+                       <apex:outputLink value="/apex/questionsetpage" target="_blank" >
+                           <font color="blue">Create Question Sets</font>
+                       </apex:outputLink>
+                       <apex:outputLink value="/apex/SendLinkForExam" target="_blank" >
+                           <font color="blue">Send links to students</font>
+                       </apex:outputLink>                                                              
+                    </apex:pageBlockSection>    
+                 </apex:pageBlock>              
+             </div>                 
+         </div>
+        
+          <div id="middle">
+           <div id="middle1" style="width:100%;">           
+              <apex:pageBlock id="pbs10" tabStyle="Program__c" >
+                  <apex:pageblockSection title="Batch Details" id="innpbs10" columns="1">                   
+                      <apex:outputPanel style="overflow:auto;height:100px;width:100%"  > 
+                         <table id="selectradio" width="100%" style="display:none"  >
+                               <tr>             
+                                   <td width="70%" align="right" ><b>
+                                        <apex:selectRadio layout="lineDirection" id="radio" onchange="showBatch('dataTable');">
+                                             <apex:selectOption itemValue="All" itemLabel="All" />
+                                             <apex:selectOption itemValue="Completed" itemLabel="Completed" />
+                                             <apex:selectOption itemValue="In Progress" itemLabel="In Progress" />
+                                             <apex:selectOption itemValue="Not Started" itemLabel="Not Started" />  
+                                             <apex:selectOption itemValue="Alert" itemLabel="Alert" />                                              
+                                       </apex:selectRadio></b>                                        
+                                   </td>
+                                   <td width="20%" id="newbtn"  align="left">
+                                       <apex:image value="{!URLFOR($Resource.CtpImz, 'ctpimg/new.jpg')}" height="10px"  width="15px"  />
+                                   </td> 
+                                   <td width="20%" align="right">
+                                        <apex:commandButton id="img" image="{!URLFOR($Resource.CTPImages, 'Imz/refresh.png')}" title="Refresh ! if any changes made in batch tab." onclick="refreshBatch('dataTable');"  style="width:10px" reRender="img"/>
+                                   </td> 
+                                   
+                                   <td width="20%" align="right">
+                                        <apex:actionStatus stopText="" id="myStatus1">
+                                            <apex:facet name="start">
+                                                <img src="/img/loading.gif" />
+                                            </apex:facet>
+                                        </apex:actionStatus>   
+                                   </td>                                 
+                               </tr>
+                            </table><br/>                        
+                           <TABLE id="dataTable" bordercolor="#E3DCDB" width="100%"   border="1" align="center" rules="all" /> 
+                       </apex:outputPanel> 
+                  </apex:pageBlockSection><br/>
+                  <apex:outputPanel id="showmsg">
+                      <apex:outputText rendered="{!showText}" ><center><font color="cornflow" size="3"><i>{!textMessage}</i></font></center></apex:outputText> 
+                  </apex:outputPanel> 
+                   <apex:pageBlock id="innerpb" >                       
+                      <apex:pageBlockSection id="innerpbs" title="{!bDet.Name}" rendered="{!showEntryTable}" columns="1">                          
+                          <apex:outputPanel style="overflow:auto;width:100%;height:100%;" layout="block"  id="outpan"  > 
+                             <apex:variable value="{!0}" var="rowno"/>                    
+                             <apex:pageBlockTable id="innerpbt" style="width:100%"  value="{!taskDetFromSEntry}"  var="tsk" rowClasses="even,odd" >                             
+                                 <apex:column width="5%">
+                                    <apex:commandButton id="cmd" image="{!URLFOR($Resource.CtpImz, 'ctpimg/edit-icon.png')}" disabled="{!if(tsk.sec.Status__c == 'Completed',true,false)}"  onclick="return displayRow({!rowno},{!taskDetFromSEntry.size});"  style="width:12px;background:{!if(tsk.sec.Status__c == 'Completed','#EBDDE2','')};" rendered="{!if(bDet.Availability__c != null && showAll == false,false,true)}"  title="Edit" reRender="cmd"></apex:commandButton>
+                                    <apex:variable value="{!rowno+1}" var="rowno"/>
+                                 </apex:column>
+                                 <apex:column width="15%" headerValue="Start Date" styleClass="{!if(tsk.sec.Status__c == 'Not Started' && tsk.sec.StartDate__c < TODAY(),'selected','')}" >
+                                     <apex:inputField value="{!tsk.sec.StartDate__c}"  style="font-size:10px;" id="oppNameInput" onchange="changeDate();" /> 
+                                     <script>document.getElementById('{!$Component.oppNameInput}').disabled = true;</script> 
+                                 </apex:column> 
+                                 <apex:column headerValue="Description" value="{!tsk.sec.Session_Name__c}" styleClass="{!if(tsk.sec.Status__c == 'Not Started' && tsk.sec.StartDate__c < TODAY(),'selected','')}"/>
+                                 <apex:column headerValue="Type"  value="{!tsk.sec.Session_Type__c}" styleClass="{!if(tsk.sec.Status__c == 'Not Started' && tsk.sec.StartDate__c < TODAY(),'selected','')}"/>
+                                 <apex:column headerValue="Batch Duration" value="{!tsk.sec.No_Of_Hours__c/60}hrs" styleClass="{!if(tsk.sec.Status__c == 'Not Started' && tsk.sec.StartDate__c < TODAY(),'selected','')}" />
+                                 <apex:column id="status" headerValue="Status"  value="{!tsk.sec.Status__c}" styleClass="{!if(tsk.sec.Status__c == 'Not Started' && tsk.sec.StartDate__c < TODAY(),'selected','')}" />
+                                 <apex:column headerValue="Faculty" styleClass="{!if(tsk.sec.Status__c == 'Not Started' && tsk.sec.StartDate__c < TODAY(),'selected','')}">
+                                    <apex:selectList value="{!tsk.sec.Faculty__c}" size="1" onchange="facChange();" id="fList" disabled="true">                                       
+                                        <apex:selectOptions value="{!tsk.facList}"  />                                                                  
+                                    </apex:selectList>                                                                       
+                                 </apex:column>                                 
+                             </apex:pageBlockTable>
+                             <apex:inputHidden id="facId" value="{!updateFaculty}"/> 
+                         </apex:outputPanel>                          
+                      </apex:pageBlockSection>   
+                      <table width="100%" >
+                         <tr>
+                            <td style="padding-left:45%">     
+                                <apex:commandButton value="Save"  onclick="return sendFid()" rendered="{!showSave}"  /> 
+                                <apex:commandButton value="Cancel" onclick="if(confirm('Do you want to refresh?')){}else{return false;}" rendered="{!showSave}" action="{!refreshPage}"  status="myStatus1"  rerender="innerpb,showmsg"/>
+                            </td> 
+                            <td>
+                                <apex:actionStatus stopText="" id="myStatus2">
+                                    <apex:facet name="start">
+                                        <img src="/img/loading.gif" />
+                                    </apex:facet>
+                                </apex:actionStatus>
+                            </td>                           
+                        </tr>
+                   </table>                  
+               </apex:pageBlock> 
+            </apex:pageBlock>          
+          </div> 
+          <div id="poc" style="display:none;width:100%;">
+              <apex:pageBlock id="lowpb" tabStyle="Program__C">
+                   <apex:pageBlockSection title="Personal Information" >
+                       <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="First Name :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.First_Name__c}" />                            
+                        </apex:pageBlockSectionItem>
+                         <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Last Name :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Last_Name__c}" />                            
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Email :"></apex:outputLabel>
+                            <apex:outputLabel >{!cord.UserInfoId__r.Email_Id__c}</apex:outputLabel>                         
+                        </apex:pageBlockSectionItem>    
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="DOB :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.DOB__c}" title="Double click to edit." >
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Gender :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Gender__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem>
+                         <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Marital Status :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Marital_Status__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem>  
+                         <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Mobile Number :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Mobile_No__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem>           
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Date of Joining : "></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Date_Of_Joining__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem>       
+                    </apex:pageBlockSection>
+                    
+                    <apex:pageBlockSection title="Technical Information" >
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Work Exp :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.Work_Experience__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem> 
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Technical Exp :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.Technical_Experience__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem> 
+                         <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Training Exp :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.Training_Experience__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem>  
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Language Known :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Language_Known__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem>                                                                          
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection title="Address" >
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Address :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Address__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem> 
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="City :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.City__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem> 
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="State :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.State__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem> 
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="PIN :"></apex:outputLabel>
+                            <apex:outputField value="{!cord.UserInfoId__r.Pin__c}" title="Double click to edit.">
+                                <apex:inlineEditSupport event="ondblclick" />
+                            </apex:outputField>
+                        </apex:pageBlockSectionItem> 
+                    </apex:pageBlockSection><br/>
+                    <div id="spwd"><apex:commandLink id="showpwd" value="Change password(+)" style="color:blue;" onclick="return showChangePassword();"/></div>
+                    <div id="clpwd"><apex:commandLink id="clspwd" value="Change password(-)" style="color:blue;" onclick="return closeChangePassword();"/></div>
+                    <div id="chpassword">
+                        <apex:pageBlockSection id="pbs" title="Change Password" columns="1">
+                            <apex:pageBlockSectionItem id="pbsitem1">
+                                <apex:outputLabel value="Old password :" />
+                                <input id="oldpwd" type="password" name="theSecretInput" />
+                            </apex:pageBlockSectionItem>                         
+                            <apex:pageBlockSectionItem id="pbsitem2">
+                                <apex:outputLabel value="New password :" />
+                                <input id="newpwd" type="password" name="theSecretInput" />
+                            </apex:pageBlockSectionItem>                            
+                            <apex:pageBlockSectionItem id="pbsitem3">
+                                <apex:outputLabel value="Confirm password :" />
+                                <input id="cnfrmpwd" type="password" name="theSecretInput" />
+                            </apex:pageBlockSectionItem>  
+                            <apex:pageBlockSectionItem >
+                                <apex:pageBlockSectionItem id="pbsitem4"></apex:pageBlockSectionItem>
+                                <apex:commandButton id="chngpwd" value="Save new password" onclick="return savePwd();" />
+                            </apex:pageBlockSectionItem>
+                        </apex:pageBlockSection>
+                    </div>
+                    <apex:pageBlockButtons location="bottom">
+                        <apex:commandButton value="Save" action="{!saveCordDet}" status="myStatus3" reRender="lowpb"/>
+                        <apex:commandButton value="Cancel" onclick="return homePage();"/>
+                        <apex:actionStatus stopText="" id="myStatus3">
+                                    <apex:facet name="start">
+                                        <img src="/img/loading.gif" />
+                                    </apex:facet>
+                            </apex:actionStatus>  
+                    </apex:pageBlockButtons>
+                </apex:pageBlock>
+              </div>      
+           </div> 
+        </div>
+     </div>         
+     <script type="text/javascript"> 
+        var queryResult;
+        var queryResult1;
+        var changed = false;  
+        window.onload = setupPage;
+        var records; 
+        var status;
+        var fname;
+        var rowno; 
+        var sendRowno =-1;
+         
+        function setupPage(){
+            validateLogin(); 
+            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb').style.display ='none';
+            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innpbs10:radio:0').checked=true; 
+            queryResult = sforce.connection.query("Select Id, Name,ProgramId__r.Id,ProgramId__r.Name  from Course__c order by ProgramId__r.Name");
+            queryResult1 = sforce.connection.query("Select Id,Name,CourseId__c,Status__c,End_Time__c,Availability__c,Start_Time__c,Start_Date__c,End_Date__c,WeekDay_Det__c,Total_Hours__c,Time_Diff__c  from Batch__c order by Name");    
+            showPrgCrs();
+            closeChangePassword();
+             
+        }     
+        
+        function homePage(){
+            document.getElementById("poc").style.display ='none';
+            document.getElementById("middle1").style.display ='block';
+            document.getElementById("pg:cordHomeTab:compg:fm:pblefttop:less").style.display ='none';
+            document.getElementById("pg:cordHomeTab:compg:fm:pblefttop:more").style.display ='block';
+            return false;
+        }
+        
+        function cordDet(){
+            document.getElementById("poc").style.display ='block';
+            document.getElementById("middle1").style.display ='none';
+            document.getElementById("pg:cordHomeTab:compg:fm:pblefttop:less").style.display ='block';
+            document.getElementById("pg:cordHomeTab:compg:fm:pblefttop:more").style.display ='none';
+            return false;
+        }
+        function showPrgCrs(){
+            var selectp= document.getElementById("pList");
+            records = queryResult.getArray('records');        
+            selectp.options.length = 1;
+            var pname;
+            for(var i=0;i<records.length;i++){      
+                if(pname != records[i].ProgramId__r.Name){         
+                    selectp.options[selectp.options.length] = new Option(records[i].ProgramId__r.Name,records[i].ProgramId__r.Id);
+                    pname=records[i].ProgramId__r.Name;
+                }
+            }  
+        }      
+       
+         function showCourse(){ 
+             
+            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:showmsg').style.visibility = 'hidden';
+            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innpbs10:radio:0').checked=true;             
+            
+            var prgId=document.getElementById("pList").value;            
+            var select= document.getElementById("sList");
+            select.options.length = 1;               
+            for(var i=0;i<records.length;i++){               
+                if(records[i].ProgramId__r.Id == prgId){               
+                    select.options[select.options.length] = new Option(records[i].Name,records[i].Id);
+               }
+            }                
+        }  
+        
+        function refreshPrgCrs(){
+           queryResult = null;
+           queryResult = sforce.connection.query("Select Id, Name,ProgramId__r.Id,ProgramId__r.Name  from Course__c order by ProgramId__r.Name");
+           document.getElementById("selectradio").style.visibility = 'hidden'; 
+           document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb').style.visibility = 'hidden';
+           document.getElementById('dataTable').style.visibility = 'hidden';
+           showPrgCrs();
+           showCourse();
+        }          
+                
+         function showBatch(tableID){
+            document.getElementById("selectradio").style.display ='block'; 
+            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:showmsg').style.visibility = 'hidden';           
+            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb').style.visibility = 'hidden';    
+            for(var r=0;r<5;r++){
+                if(document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innpbs10:radio:'+r).checked){
+                    status=document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innpbs10:radio:'+r).value;
+                    break;
+                }
+            }                  
+            document.getElementById("selectradio").style.visibility = 'visible'; 
+            document.getElementById('dataTable').style.visibility = 'visible';            
+            var table1 = document.getElementById(tableID); 
+            if(table1.rows.length > 0){
+                for(var p = table1.rows.length - 1; p > -1; p--)
+                    table1.deleteRow(p);
+                batDet(tableID);
+            }else
+                batDet(tableID); 
+        }
+        
+        function batDet(tableID){            
+            var table = document.getElementById(tableID);
+            var rowCount = queryResult1.size;
+            var bool = false;
+            var qtype='records';
+            for(i=0;i<rowCount;i++){
+                 if(queryResult1.records[i].CourseId__c == document.getElementById("sList").value && queryResult1.records[i].Availability__c != null ){
+                     bool = true;
+                     break;
+                 }
+            }   
+           if(bool)     
+                document.getElementById('newbtn').style.visibility = 'visible';
+            else
+                document.getElementById('newbtn').style.visibility = 'hidden';   
+                                                 
+            table.insertRow(0);
+            for(j=0;j<6;j++)                  
+                table.rows[0].insertCell(j);
+             table.rows[0].className ="border";
+             table.rows[0].cells[0].innerHTML="<font size='1px' >Batch Name</font>";                     
+             table.rows[0].cells[1].innerHTML="<font size='1px'>Start Date</font>";      
+             table.rows[0].cells[2].innerHTML="<font size='1px'>End Date</font>";       
+             table.rows[0].cells[3].innerHTML="<font size='1px'>Batch Duration</font>";   
+             table.rows[0].cells[4].innerHTML="<font size='1px'>Week Days</font>";   
+             table.rows[0].cells[5].innerHTML="<font size='1px'></font>"; 
+             var count=1;
+             if(status == 'Alert'){                                 
+                  for(i=0;i<rowCount;i++){                                         
+                     if(queryResult1.records[i].CourseId__c == document.getElementById("sList").value && queryResult1.records[i].Availability__c != null ){ 
+                         table.insertRow(count);
+                         if(count%2 == 0)
+                             table.rows[count].className ="even";
+                         else
+                             table.rows[count].className ="odd";                         
+                         for(j=0;j<6;j++)                  
+                             table.rows[count].insertCell(j);
+                         table.rows[count].cells[5].id=queryResult1.records[i].Id;        
+                         table.rows[count].cells[0].innerHTML=queryResult1.records[i].Name;   
+                         table.rows[count].cells[1].innerHTML=queryResult1.records[i].Start_Date__c;     
+                         table.rows[count].cells[2].innerHTML=queryResult1.records[i].End_Date__c;     
+                         table.rows[count].cells[3].innerHTML=queryResult1.records[i].Time_Diff__c+' hrs';
+                         table.rows[count].cells[4].innerHTML=queryResult1.records[i].WeekDay_Det__c;
+                         table.rows[count].cells[5].innerHTML="<input type='submit' value='View Alerts'  style='color:blue;cursor:pointer;font-size:12px;' onclick='return abc(this.parentNode.id);' />"+"&nbsp;"+"<input type='submit' value='Show All' onclick='return showAll(this.parentNode.id);' style='color:blue;cursor:pointer;font-size:12px;' />";                        
+                         count++;
+                     }
+                 }
+             }else if(status == 'All'){          
+                 for(i=0;i<rowCount;i++){                 
+                     if(queryResult1.records[i].CourseId__c == document.getElementById("sList").value ){                          
+                         table.insertRow(count);
+                         if(count%2 == 0)
+                             table.rows[count].className ="even";
+                         else
+                             table.rows[count].className ="odd";                         
+                         for(j=0;j<6;j++)                  
+                             table.rows[count].insertCell(j);   
+                         table.rows[count].cells[5].id=queryResult1.records[i].Id;                         
+                         table.rows[count].cells[0].innerHTML=queryResult1.records[i].Name;   
+                         table.rows[count].cells[1].innerHTML=queryResult1.records[i].Start_Date__c;     
+                         table.rows[count].cells[2].innerHTML=queryResult1.records[i].End_Date__c;     
+                         table.rows[count].cells[3].innerHTML=queryResult1.records[i].Time_Diff__c+' hrs';
+                         table.rows[count].cells[4].innerHTML=queryResult1.records[i].WeekDay_Det__c;
+                         table.rows[count].cells[5].innerHTML="<input type='submit' value='Details'  style='color:blue;cursor:pointer;' onclick='return abc(this.parentNode.id)'; />";
+                         count++;
+                     }
+                 }
+             }else{                                 
+                  for(i=0;i<rowCount;i++){                 
+                     if(queryResult1.records[i].CourseId__c == document.getElementById("sList").value && queryResult1.records[i].Status__c == status ){                         
+                         table.insertRow(count);
+                         if(count%2 == 0)
+                             table.rows[count].className ="even";
+                         else
+                             table.rows[count].className ="odd";                         
+                         for(j=0;j<6;j++)                  
+                             table.rows[count].insertCell(j);
+                         table.rows[count].cells[5].id=queryResult1.records[i].Id;        
+                         table.rows[count].cells[0].innerHTML=queryResult1.records[i].Name;   
+                         table.rows[count].cells[1].innerHTML=queryResult1.records[i].Start_Date__c;     
+                         table.rows[count].cells[2].innerHTML=queryResult1.records[i].End_Date__c;     
+                         table.rows[count].cells[3].innerHTML=queryResult1.records[i].Time_Diff__c+' hrs';
+                         table.rows[count].cells[4].innerHTML=queryResult1.records[i].WeekDay_Det__c;
+                         table.rows[count].cells[5].innerHTML="<input type='submit' value='Details' style='color:blue;cursor:pointer;' onclick='return abc(this.parentNode.id)'; />";                         
+                         count++;
+                     }
+                 }
+             }             
+        }
+        
+        function showAll(bid){
+           var showAll = true; 
+           goController(bid,status,showAll);
+           fname ='';
+           sendRowno =-1;
+           changed = false;
+           showAll = false;
+           return false;    
+        }
+        
+        function abc(bid){
+           goController(bid,status);
+           fname ='';
+           sendRowno =-1;
+           changed = false;
+           return false;
+        }
+        
+        function refreshBatch(tableID){
+            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:showmsg').style.visibility = 'hidden';
+            queryResult1 = null;
+            queryResult1 = sforce.connection.query("Select Id,Name,CourseId__c,Status__c,End_Time__c,Availability__c,Start_Time__c,Start_Date__c,End_Date__c,WeekDay_Det__c,Total_Hours__c,Time_Diff__c  from Batch__c order by Name");   
+            showBatch(tableID);
+        }
+                       
+        function displayRow(rno,tbllength){
+            rowno = parseInt(rno); 
+            sendRowno = rowno; 
+            var flag = false;            
+            for(i=0;i<tbllength ;i++){
+                var disable=document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':oppNameInput').disabled;                
+                if(!disable){                    
+                    flag = true;
+                    break;
+                }
+            }
+            
+            if(flag && changed){
+                alert('After save only you can edit next date.');
+            }else{
+                if(rowno == 0 ){
+                    if(status == 'Alert'){
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:0:oppNameInput').disabled=false;
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:0:oppNameInput').style.color = "red";
+                    }
+                    else{                           
+                        alert('You can change the start date from batch tab.');                    
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:0:oppNameInput').disabled=true;
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:0:oppNameInput').style.color = "black";
+                    }
+                    document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:0:fList').disabled=false; 
+                    document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:0:fList').style.color = "red";
+                    for(i=1;i<tbllength;i++){    
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':oppNameInput').disabled=true;
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':oppNameInput').style.color = "black";
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':fList').disabled=true;
+                        document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':fList').style.color = "black"; 
+                    }   
+                }else    
+                    for(i=0;i<tbllength;i++){ 
+                        if(i == rowno ){
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':oppNameInput').disabled=false;
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':oppNameInput').style.color = "red";
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':fList').disabled=false;
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':fList').style.color = "red";
+                        }    
+                        else{
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':oppNameInput').disabled=true;
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':oppNameInput').style.color = "black";
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':fList').disabled=true;
+                            document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+i+':fList').style.color = "black"; 
+                        }
+                    }
+                    changed = false;
+            }
+            return false;
+        }
+        
+        function changeDate(){
+            sendRowno = rowno;
+            changed = true;
+        }
+        
+        function facChange(){
+            sendRowno = rowno;
+            changed =true;
+            fname=document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:innerpbt:'+rowno+':fList').value;
+            var bool=confirm('Do you want to change all the faculties with this name?');
+                if(bool)
+                    document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:facId').value = true;     
+                else
+                    document.getElementById('pg:cordHomeTab:compg:fm:pbs10:innerpb:innerpbs:facId').value = false;
+        }
+        
+        function sendFid(){
+            updateFaculty(fname,sendRowno);
+            return false;
+        }
+        
+        function closediv(){
+            document.getElementById("left").style.display = 'none';
+            document.getElementById("clsbtn").style.display = 'none';
+            document.getElementById("opnbtn").style.display = 'block';     
+            document.getElementById("middle").style.width = "99%";          
+            return false;
+        }        
+        
+        function opendiv(){            
+            document.getElementById("left").style.display = 'block';
+            document.getElementById("opnbtn").style.display = 'none';
+            document.getElementById("clsbtn").style.display = 'block';
+            document.getElementById('middle').style.width ="73%";         
+            return false;
+        } 
+        
+        function showChangePassword(){
+            document.getElementById("chpassword").style.display ='block';
+            document.getElementById("spwd").style.display ='none';
+            document.getElementById("clpwd").style.display ='block';
+            return false;
+        }
+        function closeChangePassword(){
+            document.getElementById("chpassword").style.display ='None';
+            document.getElementById("spwd").style.display ='block';
+            document.getElementById("clpwd").style.display ='none';
+            return false;
+        }
+        function savePwd(){
+            var ciphertext;
+            if(document.getElementById("oldpwd").value != null)
+                ciphertext= Base64.encode(document.getElementById("oldpwd").value);
+            if(ciphertext != null && ciphertext != '{!cord.UserInfoId__r.Password__c}'){
+                alert('Input correct password.');
+                document.getElementById("oldpwd").value = '';
+            }else if(document.getElementById("newpwd").value != document.getElementById("cnfrmpwd").value){
+                alert('Reset password should be same to new password.');
+                document.getElementById("cnfrmpwd").value = '';
+            }else if(ciphertext == document.getElementById("newpwd").value){
+                alert('Change your password.');
+                document.getElementById("oldpwd").value = '';
+            }else
+                changePassword(Base64.encode(document.getElementById("cnfrmpwd").value));                
+            return false; 
+        }
+        
+        function pwdChangedStatus(){
+            alert('Requested password is succesfully changed.');            
+            closeChangePassword();               
+            document.getElementById("spwd").disabled = true;
+        }
+    </script>
+    </apex:form>
+    <script src="/soap/ajax/23.0/connection.js"></script>
+</apex:component>

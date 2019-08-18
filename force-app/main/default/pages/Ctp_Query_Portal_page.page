@@ -1,0 +1,651 @@
+<apex:page id="pg"  sidebar="false" controller="Ctp_Query_Portal_Controller" showHeader="false">    
+    <script src="{!$Resource.Ctp_UserAuth}"></script>  
+   <apex:form id="fm"> 
+        <apex:actionFunction name="goController" action="{!saveQury}" oncomplete="showQueryDet();" >
+            <apex:param name="setval1" assignTo="{!crsId}" value=""/>
+            <apex:param name="setval2" assignTo="{!ssnId}" value=""/>
+            <apex:param name="setval2" assignTo="{!facid}" value=""/>
+            <apex:param name="setval3" assignTo="{!crntdt}" value=""/>
+        </apex:actionFunction>  
+        <apex:actionFunction name="homePage" action="{!goHome}"/> 
+        <div style="padding-top:4%;">  
+           <center> <div id="qprt_main" style="border:1px solid;width:85%;background-color:#F5F5F5;">
+                    <table  width="100%"><tr><td width="100%" align="right"><apex:image url="{!URLFOR($Resource.CtpImz, 'ctpimg/close1.png')}" width="14px" height="14px" onClick="homePage();"  title="Close" style="cursor:pointer;"/></td></tr></table>
+                    <center>
+                    <div id="main_qst_crtpart" style="display:none;">
+                        <table id="facdet" width="100%" height="15px"  >
+                            <tr><td width="32%"></td><td><b>Post query to : </b>
+                                    <SELECT id="fList" NAME="Fac_list"  style="font-size:10px;width:100px;height:15px;background:#F2F9F8;" >                                              
+                                        <option value="-Select-" >-Select-</option>    
+                                    </SELECT>
+                                </td>
+                            </tr>
+                        </table>
+                       <table  width="90%" >
+                        <tr ><td align="center" width="15%">
+                                <SELECT id="cList" NAME="Course_list" onchange=" showSession(this.value);" style="font-size:10px;width:100px;height:15px;background:#F2F9F8;" >
+                                    <option value="-Course-" >-Course-</option>               
+                                </SELECT>
+                             </td>                         
+                             <td width="15%">
+                                <SELECT id="sList" NAME="Session_list" onchange="showFaculty(this.value);" style="font-size:10px;width:100px;height:15px;background:#F2F9F8;" >
+                                    <option value="-Session-" >-Session-</option>               
+                                </SELECT>
+                            </td>
+                            <td width="50%">
+                                <apex:inputTextarea cols="60" id="maintxt" rows="3" onkeyup="showAsk();"  style="width:380px;" value="{!queryString}" />
+                            </td>
+                            <td  style="visibility:hidden"><apex:commandButton value="temp" onclick="return false" /></td>
+                            <td align="right" id="AskQst" style="visibility:hidden"><apex:commandButton value="Ask" onclick="return newQuery()"   style="cursor:pointer;width:60px;background:#F2F9F8"/> </td> 
+                        </tr>                   
+                    </table>
+                </div><br/><br/><br/>
+                <table width="90%"  >
+                    <tr>   
+                        <td width="25%" ></td>                     
+                        <td width="50%" align="right">                          
+                            <input id="searchquerys" onclick="clearText();" onKeyUp="searchQuery();"   type="text" name="text" value="Search related queries." style="width:330px;height:15px;" /> 
+                        </td> 
+                        <td width="10%" ><apex:image url="{!URLFOR($Resource.CtpImz, 'ctpimg/search.png')}"  width="18px" height="18px" title="Search" style="cursor:pointer;"/></td>                        
+                        <td width="20%" align="right">
+                            <apex:selectList id="pickval" size="1" style="height:15px;width:100px;font-size:10px;background:#F2F9F8;" onchange="return searchQuery();">
+                                <apex:selectOption itemLabel="View All" itemValue="View All" />
+                                <apex:selectOption itemLabel="Unread" itemValue="Newest" />
+                                <apex:selectOption itemLabel="Closed" itemValue="Closed" />
+                            </apex:selectList>
+                        </td>
+                    </tr>
+                </table><br/> 
+                <table width="90%" rules="all" height="20px" >
+                    <tr>
+                        <td width="10%"><center><b>Created Date</b></center></td>
+                        <td width="8%"><center><b>Posts</b></center></td>
+                        <td width="40%"><center><b>Query</b></center></td>
+                        <td width="14%"><center><b>Author</b></center></td>
+                    </tr>
+                </table>
+                <table id="tabId" width="90%" frame="box" rules="rows">
+                </table></center><br/>
+                <table width="90%" ><tr><td width="92%"></td>
+                    <td width="8%" >
+                        <table width="100%"  >
+                            <tr>
+                              <!--  <td width="12%" align="right"><button type="button" style="background:#0000CD;width:15px;height:14px;"><font color="white"><b>F</b></font></button></td> -->
+                                <td id="prev" style="visibility:hidden" width="20%" align="left"><apex:image url="{!URLFOR($Resource.CtpImz, 'ctpimg/back.png')}" width="15px" height="14px" onclick="callFilterRecPrev();" title="Previous page" style="cursor:pointer;"  /></td>                                    
+                                <td id="pageno" width="40%" align="center" style="font-weight:bold;font-size:10px;"></td>
+                                <td id="next" width="20%" align="right"><apex:image url="{!URLFOR($Resource.CtpImz, 'ctpimg/forwards.png')}" width="15px" height="14px" title="Next page" onclick="callFilterRecNext();" style="cursor:pointer;"/></td>
+                              <!--  <td width="12%"><button type="button" style="background:#0000CD;width:15px;height:14px;"><font color="white"><b>L</b></font></button></td> -->
+                           </tr>
+                       </table>
+                   </td></tr>
+               </table><br/>                
+           </div></center><br/>                      
+           <center> 
+           <div id="qprt_related"  style="border:1px solid;width:85%;background-color:#F5F5F5;display:none;"> 
+           <table  width="100%"><tr><td width="100%" align="right"><apex:image url="{!URLFOR($Resource.CtpImz, 'ctpimg/close1.png')}" width="14px" height="14px" onclick="return closeRelDiv();" title="Close" style="cursor:pointer;"/></td></tr></table> 
+           
+           <div id="legends" style="width:90%;padding-top:3%;padding-left:5%;"></div>       
+           <div  style="width:88%;padding-left:3%;padding-top:3%;padding-right:9%;">
+             <table id="resAsk"  width="100%" >
+                   <tr ><td width="50%"  align="right" >                      
+                           <apex:commandButton value="Resolved" style="background:#F2F9F8;" onclick="return closeStatus();"/>
+                        </td>
+                        <td width="50%"  >  
+                           <apex:commandButton id="bttn" value="Create new post" onclick="return showTextArea()"  style="background:#F2F9F8;"  />
+                        </td>
+                   </tr>
+               </table> <br/>
+               <table id="relatedInnerQuery"  width="100%" style="display:none" >
+                   <tr>
+                       <td width="5%"></td>
+                       <td id="postqueryArea">
+                           <apex:inputTextarea id="reltextarea" onclick="onclickInside(this.value);" onchange="checkInnerData(this.value);" onkeyup="showPost(this.value);" cols="80" rows="3" style="font-size:12px;" />
+                       </td>                                         
+                   </tr>
+                   <tr >
+                       <td width="1%"></td>
+                       <td align="right" id="postbtn" style="visibility:hidden"><apex:commandButton id="bttn1" value="Post" onclick="return saveInRelTab();"  style="width:40px;background:#F2F9F8;"/></td>
+                   </tr>                          
+               </table>
+           </div>
+           </div> </center>   
+        </div> 
+    </apex:form>         
+    <script type="text/javascript"> 
+        window.onload = setupPage; 
+        var queryResult0;
+        var queryResult1;
+        var records;
+        var records1;
+        var mainrecId;
+        var relrecId;
+        var pageno;
+        var totalpage;
+        
+        
+        function setupPage(){ 
+            validateLogin();                     
+            queryResult0 = sforce.connection.query("Select Id, Name,CourseId__r.Name,(Select Id,Batch__c,Faculty__c,Faculty__r.UserInfoId__r.First_Name__c,Session_Name__c  from SessionEntrys__r  where Status__c='Completed' order by Session_Name__c)  from Batch__c where Id='{!courseId}'");            
+            records = queryResult0.getArray('records');            
+            var select= document.getElementById("cList");
+            select.options.length = 1;               
+            for(var i=0;i<records.length;i++)               
+                select.options[select.options.length] = new Option(records[i].CourseId__r.Name,records[i].Id); 
+            quryDetails();
+        }   
+         
+        function showSession(cId){
+            var selectss= document.getElementById("sList");
+            var sslist = '-Session-';
+            selectss.options.length = 1;              
+            for(var i=0;i<records.length;i++){ 
+                for(j=0;j<records[i].SessionEntrys__r.size;j++){                    
+                    if(records[i].SessionEntrys__r.size > 1){                        
+                        if(records[i].SessionEntrys__r.records[j].Batch__c == cId)       
+                            if(sslist.search(records[i].SessionEntrys__r.records[j].Session_Name__c) == -1){    
+                                selectss.options[selectss.options.length] = new Option(records[i].SessionEntrys__r.records[j].Session_Name__c,records[i].SessionEntrys__r.records[j].Session_Name__c); 
+                                sslist += records[i].SessionEntrys__r.records[j].Session_Name__c;
+                            } 
+                    }else{                      
+                       if(records[i].SessionEntrys__r.records.Batch__c == cId)
+                           selectss.options[selectss.options.length] = new Option(records[i].SessionEntrys__r.records.Session_Name__c,records[i].SessionEntrys__r.records.Session_Name__c); 
+                   } 
+                }
+            }    
+        }
+        
+        function showFaculty(val){            
+            var selectfac= document.getElementById("fList");
+            var selfac='-Select-';
+            selectfac.options.length = 1;  
+            for(var i=0;i<records.length;i++){ 
+                if(records[i].SessionEntrys__r.records.length > 1){
+                    for(j=0;j<records[i].SessionEntrys__r.size;j++){ 
+                        if(val == records[i].SessionEntrys__r.records[j].Session_Name__c)
+                            if(selfac.search(records[i].SessionEntrys__r.records[j].Faculty__c) == -1 ){                            
+                                selectfac.options[selectfac.options.length] = new Option(records[i].SessionEntrys__r.records[j].Faculty__r.UserInfoId__r.First_Name__c,records[i].SessionEntrys__r.records[j].Faculty__c);
+                                selfac += records[i].SessionEntrys__r.records[j].Faculty__c;
+                            }
+                    }
+                }else{
+                    if(val == records[i].SessionEntrys__r.records.Session_Name__c)
+                            if(selfac.search(records[i].SessionEntrys__r.records.Faculty__c) == -1 ){                            
+                                selectfac.options[selectfac.options.length] = new Option(records[i].SessionEntrys__r.records.Faculty__r.UserInfoId__r.First_Name__c,records[i].SessionEntrys__r.records.Faculty__c);
+                                selfac += records[i].SessionEntrys__r.records.Faculty__c;
+                            }
+               }     
+            }   
+        }
+        
+        function quryDetails(){
+            var table = document.getElementById("tabId");   
+            if(table.rows.length > 0){
+                for(var p = table.rows.length - 1; p > -1; p--)
+                    table.deleteRow(p);    
+            }
+            if('{!s_f_type}' == 'Student'){
+                queryResult1=sforce.connection.query("SELECT Id,post_read__c, Qp_Date_Time__c,Main_Posted_Query__c, Qp_Stataus__c, Qp_Criticality__c, Qp_Satisfaction__c,(SELECT Id,Name,Post_Counter__c,Stud_Post_Read__c, Assigned_Id__c, Q_Post__c,Created_d_t__c FROM CQRs__r order by Name) FROM Ctp_Query_Portal__c where Ctp_StudentId__r.Id='{!s_f_id}' order by Name Desc "); 
+                document.getElementById("main_qst_crtpart").style.display="block";
+            }else if('{!s_f_type}' == 'Faculty'){
+                 queryResult1=sforce.connection.query("SELECT Id,Faculty_Post_Read__c, Qp_Date_Time__c,Main_Posted_Query__c, Qp_Stataus__c, Qp_Criticality__c, Qp_Satisfaction__c,(SELECT Id, Name,Post_Counter__c,Fac_Post_Read__c, Assigned_Id__c, Q_Post__c,Created_d_t__c FROM CQRs__r order by Name) FROM Ctp_Query_Portal__c where Ctp_FacultyId__r.Id='{!f_s_id}' order by Name Desc"); 
+                 document.getElementById("main_qst_crtpart").style.display="none";
+            }
+            records1 = queryResult1.getArray('records');               
+            var rowCnt = records1.length;            
+            for(i=0;i<rowCnt;i++){         
+                 table.insertRow(i);
+                 table.rows[i].style.height="20px"; 
+                 for(j=0;j<4;j++)                  
+                    table.rows[i].insertCell(j);                                  
+                 table.rows[i].cells[0].style.width="10%"; 
+                 table.rows[i].cells[1].style.width="8%"; 
+                 table.rows[i].cells[1].style.textAlign="center";
+                 table.rows[i].cells[2].style.width="40%"; 
+                 table.rows[i].cells[2].style.cursor="pointer"; 
+                 table.rows[i].cells[2].id=records1[i].Id; 
+                 table.rows[i].cells[2].onclick=function(){showRelatedTable(this.id);}                               
+                 table.rows[i].cells[3].style.width="14%";   
+                 if(records1[i].Qp_Stataus__c == 'Closed'){                     
+                     table.rows[i].style.background="#EEF3E2";
+                     table.rows[i].style.fontWeight = "400";
+                 }else if('{!s_f_type}' == 'Student'){
+                     if(records1[i].post_read__c == 'Read'){
+                         table.rows[i].style.background="#EEEEEE"; 
+                         table.rows[i].style.fontWeight = "400";
+                     }else{
+                         table.rows[i].style.background="#FFFFFF";
+                         table.rows[i].style.fontWeight = "bold";
+                     }
+                 }else if('{!s_f_type}' == 'Faculty'){
+                     if(records1[i].Faculty_Post_Read__c == 'Read'){
+                         table.rows[i].style.background="#EEEEEE"; 
+                         table.rows[i].style.fontWeight = "400";
+                     }else{
+                         table.rows[i].style.background="#FFFFFF";
+                         table.rows[i].style.fontWeight = "bold";
+                     }
+                 }                 
+                 table.rows[i].cells[1].id="btn"+i;
+                 table.rows[i].cells[0].innerHTML= records1[i].Qp_Date_Time__c; 
+                 if(parseInt(records1[i].CQRs__r.records.length) > 0)
+                     table.rows[i].cells[1].innerHTML="<input type='button' value='"+parseInt(records1[i].CQRs__r.records.length)+"' style='font-size:11px;width:26px;height:18px;' />";
+                 else
+                     table.rows[i].cells[1].innerHTML="<input type='button' value='1' style='font-size:11px;width:26px;height:18px;' />"; 
+                 if(records1[i].Main_Posted_Query__c == null || records1[i].Main_Posted_Query__c.length < 65)
+                     table.rows[i].cells[2].innerHTML=records1[i].Main_Posted_Query__c;
+                 else
+                     table.rows[i].cells[2].innerHTML=records1[i].Main_Posted_Query__c.substr(0,64)+"..";
+                 if(parseInt(records1[i].CQRs__r.records.length) > 0)
+                     table.rows[i].cells[3].innerHTML=records1[i].CQRs__r.records[records1[i].CQRs__r.records.length-1].Assigned_Id__c;
+                 else
+                     table.rows[i].cells[3].innerHTML=records1[i].CQRs__r.records.Assigned_Id__c;
+            }   
+            pageno=1;  
+            totalpage=Math.ceil(parseInt(table.rows.length)/5);
+            document.getElementById("pageno").innerHTML=pageno+' '+'/'+' '+totalpage;  
+            filterRecords(parseInt(pageno));                    
+        }       
+        
+        function filterRecords(ressize){
+            var table = document.getElementById("tabId"); 
+            for(r=0;r<table.rows.length;r++){
+                if(r>=(ressize*5-5) && r<(ressize*5)){
+                     table.rows[r].style.display="block";
+                     table.rows[r].style.display="table-row";
+                }
+                else
+                     table.rows[r].style.display="none";
+            } 
+            if(ressize < 2)
+                document.getElementById("prev").style.visibility="hidden";
+            else
+                document.getElementById("prev").style.visibility="visible";
+            if(ressize*5 >= table.rows.length)
+                document.getElementById("next").style.visibility="hidden";
+            else
+                document.getElementById("next").style.visibility="visible";
+        } 
+        
+        function callFilterRecPrev(){
+            var table = document.getElementById("tabId"); 
+            if(parseInt(pageno) > 1){  
+                pageno=parseInt(pageno)-1; 
+                filterRecords(pageno);                                
+                document.getElementById("pageno").innerHTML=pageno+' '+'/'+' '+totalpage;     
+            }   
+        }
+        
+        function callFilterRecNext(){
+            var table = document.getElementById("tabId"); 
+            if(parseInt(pageno) < parseInt(totalpage)){ 
+                pageno=parseInt(pageno)+1; 
+                filterRecords(pageno);                
+                document.getElementById("pageno").innerHTML = pageno+' '+'/'+' '+totalpage;    
+            }          
+        }
+        
+        function showAsk(){
+            if(document.getElementById("pg:fm:maintxt").value=='' || document.getElementById("pg:fm:maintxt").value==null)
+                document.getElementById("AskQst").style.visibility="hidden";
+            else
+                document.getElementById("AskQst").style.visibility="visible";
+        }  
+        
+       function newQuery(){
+           var d=new Date(); 
+           var endstr;
+               if(d.getHours() < 12)
+                   endstr="AM";
+               else
+                   endstr="PM";
+           var curtime =d.getDate()+"/"+parseInt(d.getMonth()+1)+"/"+d.getFullYear()+" "+d.getHours()+":"+d.getMinutes()+" "+endstr;
+           var crsId= document.getElementById("cList").value;
+           var ssnId= document.getElementById("sList").value;
+           var facid=document.getElementById("fList").value;
+           if(facid == '-Select-')
+               alert('Please select the faculty.');
+           else
+               goController(crsId,ssnId,facid,curtime); 
+           return false;   
+        }  
+        
+        function showQueryDet(){
+            document.getElementById("pg:fm:maintxt").value='';
+            document.getElementById("cList").value="-Course-";
+            document.getElementById("sList").value="-Session-";
+            document.getElementById("fList").value="-Select-";
+            showAsk();
+            quryDetails();
+        }
+        
+        function showRelatedTable(rowid){                                                         
+            var divId= document.getElementById("legends");
+            divId.innerHTML = '';                    
+            var rowCnt = records1.length; 
+            relrecId= rowid;            
+            for(i=0;i<rowCnt;i++){
+                 if(records1[i].Id == relrecId){                     
+                     mainrecId = records1[i].Id;
+                     if(parseInt(records1[i].CQRs__r.records.length) > 0){                     
+                         for(j=0;j<records1[i].CQRs__r.size;j++){
+                             if('{!s_f_type}' == 'Student'){
+                                 if(records1[i].CQRs__r.records[j].Stud_Post_Read__c =='Unread')
+                                     divId.innerHTML+="<table  frame='box' rules='rows' id='ppp'   width='100%' ><tr style='background-color:#B0E0E6' height='20px'   onclick=abc('"+"abc"+i+j+"')><td width='80%'>"+records1[i].CQRs__r.records[j].Assigned_Id__c+"</td><td width='20%' align='right'>"+records1[i].CQRs__r.records[j].Created_d_t__c+"</td></tr><tr style='display:table-row;background-color:#F5F5DC;' id='"+"abc"+i+j+"'  height='35px'><td ><font size='2px'>"+records1[i].CQRs__r.records[j].Q_Post__c+"</font></td><td ></td></tr></table><br/>";
+                                 else                                   
+                                     divId.innerHTML+="<table  frame='box' rules='rows' id='ppp'   width='100%' ><tr style='background-color:#B0E0E6' height='20px'   onclick=abc('"+"abc"+i+j+"')><td width='80%'>"+records1[i].CQRs__r.records[j].Assigned_Id__c+"</td><td width='20%' align='right'>"+records1[i].CQRs__r.records[j].Created_d_t__c+"</td></tr><tr style='display:none;background-color:#F5F5DC;' id='"+"abc"+i+j+"'  height='35px'><td ><font size='2px'>"+records1[i].CQRs__r.records[j].Q_Post__c+"</font></td><td ></td></tr></table><br/>";
+                             }else if('{!s_f_type}' == 'Faculty'){
+                                 if(records1[i].CQRs__r.records[j].Fac_Post_Read__c =='Unread')
+                                     divId.innerHTML+="<table  frame='box' rules='rows' id='ppp'   width='100%' ><tr style='background-color:#B0E0E6' height='20px'   onclick=abc('"+"abc"+i+j+"')><td width='80%'>"+records1[i].CQRs__r.records[j].Assigned_Id__c+"</td><td width='20%' align='right'>"+records1[i].CQRs__r.records[j].Created_d_t__c+"</td></tr><tr style='display:table-row;background-color:#F5F5DC;' id='"+"abc"+i+j+"'  height='35px'><td ><font size='2px'>"+records1[i].CQRs__r.records[j].Q_Post__c+"</font></td><td ></td></tr></table><br/>";
+                                 else                                   
+                                     divId.innerHTML+="<table  frame='box' rules='rows' id='ppp'   width='100%' ><tr style='background-color:#B0E0E6' height='20px'   onclick=abc('"+"abc"+i+j+"')><td width='80%'>"+records1[i].CQRs__r.records[j].Assigned_Id__c+"</td><td width='20%' align='right'>"+records1[i].CQRs__r.records[j].Created_d_t__c+"</td></tr><tr style='display:none;background-color:#F5F5DC;' id='"+"abc"+i+j+"'  height='35px'><td ><font size='2px'>"+records1[i].CQRs__r.records[j].Q_Post__c+"</font></td><td ></td></tr></table><br/>";
+                             }
+                         }
+                     }else
+                         divId.innerHTML="<table  frame='box' rules='rows' id='ppp'   width='100%' ><tr style='background-color:#B0E0E6' height='20px'   onclick=abc('"+"abc"+i+j+"')><td width='80%'>"+records1[i].CQRs__r.records.Assigned_Id__c+"</td><td width='20%' align='right'>"+records1[i].CQRs__r.records.Created_d_t__c+"</td></tr><tr style='background-color:#F5F5DC' id='"+"abc"+i+j+"'  height='35px'><td ><font size='2px'>"+records1[i].CQRs__r.records.Q_Post__c+"</font></td><td ></td></tr></table><br/>";
+                                          
+                     if(records1[i].Qp_Stataus__c == 'Closed')                       
+                         document.getElementById("resAsk").style.visibility='hidden';
+                     else 
+                         document.getElementById("resAsk").style.visibility='visible'; 
+                     var cqrrel; 
+                     if('{!s_f_type}' == 'Student' && records1[i].post_read__c == 'Unread'){
+                        document.getElementById("tabId").rows[i].style.background="#EEEEEE";
+                        document.getElementById("tabId").rows[i].style.fontWeight = "400";
+                        records1[i].post_read__c ='Read';  
+                        cqr=new sforce.SObject("Ctp_Query_Portal__c");
+                        cqr.Id=relrecId;                    
+                        cqr.post_read__c='Read';     
+                        sforce.connection.update([cqr]);     
+                        for(j=0;j<records1[i].CQRs__r.size;j++){ 
+                            cqrrel=new sforce.SObject("Ctp_QPost_Related__c");
+                            cqrrel.Stud_Post_Read__c='Read'; 
+                            if(records1[i].CQRs__r.records.length >0){
+                                cqrrel.Id=records1[i].CQRs__r.records[j].Id;
+                                if(records1[i].CQRs__r.records[j].Stud_Post_Read__c =='Unread')
+                                    sforce.connection.update([cqrrel]); 
+                            }else{
+                                cqrrel.Id=records1[i].CQRs__r.records.Id;
+                                if(records1[i].CQRs__r.records.Stud_Post_Read__c =='Unread')
+                                    sforce.connection.update([cqrrel]); 
+                            }
+                        }
+                    }else if('{!s_f_type}' == 'Faculty' && records1[i].Faculty_Post_Read__c == 'Unread'){
+                        document.getElementById("tabId").rows[i].style.background="#EEEEEE";
+                        document.getElementById("tabId").rows[i].style.fontWeight = "400";
+                        records1[i].Faculty_Post_Read__c ='Read';  
+                        var cqr=new sforce.SObject("Ctp_Query_Portal__c");
+                        cqr.Id=relrecId;                    
+                        cqr.Faculty_Post_Read__c='Read';     
+                        sforce.connection.update([cqr]);     
+                        for(j=0;j<records1[i].CQRs__r.size;j++){
+                            cqrrel=new sforce.SObject("Ctp_QPost_Related__c"); 
+                            cqrrel.Fac_Post_Read__c='Read';
+                            if(records1[i].CQRs__r.records.length >0){                                
+                                cqrrel.Id=records1[i].CQRs__r.records[j].Id;
+                                if(records1[i].CQRs__r.records[j].Fac_Post_Read__c =='Unread')
+                                    sforce.connection.update([cqrrel]);
+                            }else{
+                                cqrrel.Id=records1[i].CQRs__r.records.Id;
+                                if(records1[i].CQRs__r.records.Fac_Post_Read__c =='Unread')
+                                    sforce.connection.update([cqrrel]); 
+                            }
+                        }
+                    }
+                    break;
+                 }                    
+            }   
+            document.getElementById("qprt_main").style.display='none';  
+            document.getElementById("qprt_related").style.display='block'; 
+            document.getElementById("relatedInnerQuery").style.display='none'; 
+            document.getElementById("pg:fm:reltextarea").value='';
+        }
+        
+        function closeRelDiv(){
+            document.getElementById("qprt_main").style.display='block';  
+            document.getElementById("qprt_related").style.display='none';
+            document.getElementById("postqueryArea").style.display='none';
+            return false;
+        }
+        
+        function abc(nextrowid){
+            if(document.getElementById(nextrowid).style.display == 'none')
+                document.getElementById(nextrowid).style.display='table-row';
+            else
+                document.getElementById(nextrowid).style.display='none';   
+        }
+        
+        function clearText(){
+            if(document.getElementById("searchquerys").value == "Search related queries.")
+                document.getElementById("searchquerys").value='';
+        }
+        
+        function saveInRelTab(){
+            var d=new Date();
+            var endstr;
+            if(d.getHours() < 12)
+                endstr="AM";
+            else
+                endstr="PM";
+            var curtime =d.getDate()+"/"+parseInt(d.getMonth()+1)+"/"+d.getFullYear()+" "+d.getHours()+":"+d.getMinutes()+" "+endstr;
+            var cqr_rel=new sforce.SObject("Ctp_QPost_Related__c"); 
+            cqr_rel.Q_Post__c=document.getElementById("pg:fm:reltextarea").value;
+            cqr_rel.Ctp_Query_PortalId__c=mainrecId;
+            cqr_rel.Created_d_t__c=curtime;            
+            cqr_rel.Assigned_Id__c='{!s_f_name}';
+            cqr_rel.Stud_Post_Read__c='Unread';
+            cqr_rel.Fac_Post_Read__c='Unread';
+            
+            sforce.connection.create([cqr_rel]);
+            var cqr=new sforce.SObject("Ctp_Query_Portal__c");
+            cqr.Id=relrecId;
+            cqr.post_read__c='Unread';
+            cqr.Faculty_Post_Read__c='Unread';
+            sforce.connection.update([cqr]);    
+            quryDetails();
+            showRelatedTable(relrecId);
+            return false;
+        }
+        
+        function closeStatus(){
+            var cqr=new sforce.SObject("Ctp_Query_Portal__c");
+            cqr.Qp_Stataus__c='Closed';
+            cqr.Id=relrecId;
+            sforce.connection.update([cqr]);   
+            closeRelDiv();
+            quryDetails();
+            return false;
+        }
+        
+        function searchQuery(){ 
+            clearText();
+            var pckval=document.getElementById("pg:fm:pickval").value;    
+            var count = 0;      
+            var table = document.getElementById("tabId");
+            if(table.rows.length > 0){
+                for(var p = table.rows.length - 1; p > -1; p--)
+                    table.deleteRow(p);    
+            }    
+            
+            if(pckval == 'View All'){                  
+                for(var i=0;i<records1.length;i++){                       
+                   if(records1[i].Main_Posted_Query__c != null && (records1[i].Main_Posted_Query__c.toLowerCase().search(document.getElementById("searchquerys").value) != -1 || records1[i].Main_Posted_Query__c.toUpperCase().search(document.getElementById("searchquerys").value) != -1)){  
+                         table.insertRow(count);
+                         table.rows[count].style.height="20px"; 
+                         for(j=0;j<4;j++)                  
+                            table.rows[count].insertCell(j);                        
+                         table.rows[count].cells[0].style.width="10%"; 
+                         table.rows[count].cells[1].style.width="8%"; 
+                         table.rows[count].cells[1].style.textAlign="center";
+                         table.rows[count].cells[2].style.width="40%"; 
+                         table.rows[count].cells[2].style.cursor="pointer"; 
+                         table.rows[count].cells[2].id=records1[i].Id; 
+                         table.rows[count].cells[2].onclick=function(){showRelatedTable(this.id)}  
+                         table.rows[count].cells[3].style.width="14%"; 
+                         if(records1[i].Qp_Stataus__c == 'Closed'){
+                             table.rows[count].style.background="#EEF3E2";
+                             table.rows[count].style.fontWeight = "400";
+                         }else if('{!s_f_type}' == 'Student'){
+                             if(records1[i].post_read__c == 'Read' && records1[i].Qp_Stataus__c !='Closed'){
+                                 table.rows[count].style.background="#EEEEEE"; 
+                                 table.rows[count].style.fontWeight = "400";
+                             }else{
+                                 table.rows[count].style.background="#FFFFFF";
+                                 table.rows[count].style.fontWeight = "bold";
+                             }
+                         }else if('{!s_f_type}' == 'Faculty' ){
+                             if(records1[i].Faculty_Post_Read__c == 'Read' && records1[i].Qp_Stataus__c !='Closed'){
+                                 table.rows[count].style.background="#EEEEEE"; 
+                                 table.rows[count].style.fontWeight = "400";
+                             }else{
+                                 table.rows[count].style.background="#FFFFFF";
+                                 table.rows[count].style.fontWeight = "bold";
+                             }
+                         }
+                         table.rows[count].cells[0].innerHTML= records1[i].Qp_Date_Time__c;
+                         if(parseInt(records1[i].CQRs__r.records.length) > 0)
+                             table.rows[count].cells[1].innerHTML="<input type='button' value='"+parseInt(records1[i].CQRs__r.records.length)+"' style='font-size:11px' />";                 
+                         else
+                             table.rows[count].cells[1].innerHTML="<input type='button' value='1' style='font-size:11px' />";                     
+                        
+                         if(records1[i].Main_Posted_Query__c == null || records1[i].Main_Posted_Query__c.length < 65)
+                             table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c;
+                         else
+                             table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c.substr(0,64)+"..";                         
+                        
+                         if(parseInt(records1[i].CQRs__r.records.length) > 0)
+                             table.rows[count].cells[3].innerHTML=records1[i].CQRs__r.records[records1[i].CQRs__r.records.length-1].Assigned_Id__c;
+                         else                              
+                             table.rows[count].cells[3].innerHTML=records1[i].CQRs__r.records.Assigned_Id__c;  
+                         count++; 
+                     } 
+                }  
+            }else if(pckval == 'Closed'){
+                for(var i=0;i<records1.length;i++){   
+                   if(records1[i].Qp_Stataus__c == 'Closed' && records1[i].Main_Posted_Query__c != null && (records1[i].Main_Posted_Query__c.toLowerCase().search(document.getElementById("searchquerys").value) != -1 || records1[i].Main_Posted_Query__c.toUpperCase().search(document.getElementById("searchquerys").value) != -1)){  
+                         table.insertRow(count);
+                         table.rows[count].style.height="20px"; 
+                         for(j=0;j<4;j++)                  
+                            table.rows[count].insertCell(j);                        
+                         table.rows[count].cells[0].style.width="10%"; 
+                         table.rows[count].cells[1].style.width="8%"; 
+                         table.rows[count].cells[1].style.textAlign="center";
+                         table.rows[count].cells[2].style.width="40%"; 
+                         table.rows[count].cells[2].style.cursor="pointer"; 
+                         table.rows[count].cells[2].id=records1[i].Id; 
+                         table.rows[count].cells[2].onclick=function(){showRelatedTable(this.id);}  
+                         table.rows[count].cells[3].style.width="14%"; 
+                         table.rows[count].style.background="#EEF3E2"; 
+                         table.rows[count].cells[0].innerHTML= records1[i].Qp_Date_Time__c;
+                         if(parseInt(records1[i].CQRs__r.records.length) > 0)
+                             table.rows[count].cells[1].innerHTML="<input type='button' value='"+parseInt(records1[i].CQRs__r.records.length)+"' style='font-size:11px' />";                 
+                         else
+                             table.rows[count].cells[1].innerHTML="<input type='button' value='1' style='font-size:11px' />";                     
+                         if(records1[i].Main_Posted_Query__c == null || records1[i].Main_Posted_Query__c.length < 65)
+                             table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c;
+                         else
+                             table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c.substr(0,64)+"..";  
+                         table.rows[count].cells[3].innerHTML=records1[i].CQRs__r.records.Assigned_Id__c;                         
+                         count++; 
+                     } 
+                } 
+            }else if(pckval == 'Newest'){ 
+                for(var i=0;i<records1.length;i++){   
+                    if('{!s_f_type}' == 'Student'){                   
+                       if(records1[i].post_read__c == 'Unread' && records1[i].Main_Posted_Query__c != null && (records1[i].Main_Posted_Query__c.toLowerCase().search(document.getElementById("searchquerys").value) != -1 || records1[i].Main_Posted_Query__c.toUpperCase().search(document.getElementById("searchquerys").value) != -1)){  
+                             table.insertRow(count);
+                             table.rows[count].style.height="20px"; 
+                             for(j=0;j<4;j++)                  
+                                table.rows[count].insertCell(j);                        
+                             table.rows[count].cells[0].style.width="10%"; 
+                             table.rows[count].cells[1].style.width="8%"; 
+                             table.rows[count].cells[1].style.textAlign="center";
+                             table.rows[count].cells[2].style.width="40%"; 
+                             table.rows[count].cells[2].style.cursor="pointer"; 
+                             table.rows[count].cells[2].id=records1[i].Id; 
+                             table.rows[count].cells[2].onclick=function(){showRelatedTable(this.id);}  
+                             table.rows[count].cells[3].style.width="14%"; 
+                             table.rows[count].style.background="#FFFFFF";
+                             table.rows[count].style.fontWeight = "bold";                   
+                             table.rows[count].cells[0].innerHTML= records1[i].Qp_Date_Time__c;
+                             if(parseInt(records1[i].CQRs__r.records.length) > 0)
+                                 table.rows[count].cells[1].innerHTML="<input type='button' value='"+parseInt(records1[i].CQRs__r.records.length)+"' style='font-size:11px' />";                 
+                             else
+                                 table.rows[count].cells[1].innerHTML="<input type='button' value='1' style='font-size:11px' />";                     
+                             if(records1[i].Main_Posted_Query__c == null || records1[i].Main_Posted_Query__c.length < 65)
+                                 table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c;
+                             else
+                                 table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c.substr(0,64)+"..";  
+                             table.rows[count].cells[3].innerHTML=records1[i].CQRs__r.records.Assigned_Id__c;                         
+                             count++; 
+                         } 
+                    }else if('{!s_f_type}' == 'Faculty'){
+                        if(records1[i].Faculty_Post_Read__c == 'Unread' && records1[i].Main_Posted_Query__c != null && (records1[i].Main_Posted_Query__c.toLowerCase().search(document.getElementById("searchquerys").value) != -1 || records1[i].Main_Posted_Query__c.toUpperCase().search(document.getElementById("searchquerys").value) != -1)){  
+                             table.insertRow(count);
+                             table.rows[count].style.height="20px"; 
+                             for(j=0;j<4;j++)                  
+                                table.rows[count].insertCell(j);                        
+                             table.rows[count].cells[0].style.width="10%"; 
+                             table.rows[count].cells[1].style.width="8%"; 
+                             table.rows[count].cells[1].style.textAlign="center";
+                             table.rows[count].cells[2].style.width="40%"; 
+                             table.rows[count].cells[2].style.cursor="pointer"; 
+                             table.rows[count].cells[2].id=records1[i].Id; 
+                             table.rows[count].cells[2].onclick=function(){showRelatedTable(this.id);}  
+                             table.rows[count].cells[3].style.width="14%"; 
+                             table.rows[count].style.background="#FFFFFF";
+                             table.rows[count].style.fontWeight = "bold";                   
+                             table.rows[count].cells[0].innerHTML= records1[i].Qp_Date_Time__c;
+                             if(parseInt(records1[i].CQRs__r.records.length) > 0)
+                                 table.rows[count].cells[1].innerHTML="<input type='button' value='"+parseInt(records1[i].CQRs__r.records.length)+"' style='font-size:11px' />";                 
+                             else
+                                 table.rows[count].cells[1].innerHTML="<input type='button' value='1' style='font-size:11px' />";                     
+                             if(records1[i].Main_Posted_Query__c == null || records1[i].Main_Posted_Query__c.length < 65)
+                                 table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c;
+                             else
+                                 table.rows[count].cells[2].innerHTML=records1[i].Main_Posted_Query__c.substr(0,64)+"..";  
+                             table.rows[count].cells[3].innerHTML=records1[i].CQRs__r.records.Assigned_Id__c;                         
+                             count++; 
+                         } 
+                     }
+                 }                         
+            }  
+            pageno=1;
+            totalpage=Math.ceil(parseInt(table.rows.length)/5);                 
+            document.getElementById("pageno").innerHTML = pageno+' '+'/'+' '+totalpage;      
+            filterRecords(parseInt(1)); 
+            return false;
+        }    
+                
+        function showTextArea(){
+            document.getElementById("postqueryArea").style.display='block'; 
+            document.getElementById("relatedInnerQuery").style.display='block';
+            document.getElementById("pg:fm:reltextarea").value='Click here to post query.';
+            return false;
+        }               
+        
+        function showPost(textvalue){             
+            if(textvalue == '')
+                document.getElementById("postbtn").style.visibility='hidden';
+            else
+                document.getElementById("postbtn").style.visibility='visible';
+        }
+        
+        function checkInnerData(innerValue){
+            if(innerValue == '')
+                document.getElementById("pg:fm:reltextarea").value='Click here to post query.';
+        }
+        
+        function onclickInside(innertext){
+            if(innertext == 'Click here to post query.')
+                document.getElementById("pg:fm:reltextarea").value='';
+        }
+        
+        function refreshWhole(){        
+            quryDetails();
+            document.getElementById("qprt_main").style.display='block';  
+            document.getElementById("qprt_related").style.display='none';   
+        }
+        
+    </script>
+    <script src="/soap/ajax/23.0/connection.js"></script> 
+</apex:page>

@@ -1,0 +1,137 @@
+<apex:page controller="LoginAuthenticate" id="pg" sidebar="false" showHeader="false"> 
+  
+<apex:form id="fm"><br/><br/>
+ 
+<style type="text/css">
+    #mainright {padding-top:30px;padding-left:36%;padding-right:36%;}     
+</style>
+
+ <div id="top">
+      <apex:image value="{!URLFOR($Resource.CtpLogo)}" width="8%" height="80" /> &nbsp;&nbsp;&nbsp; 
+      <apex:image value="{!URLFOR($Resource.CTPImages, 'Imz/MainHeader.png')}" width="90%" height="80"/>
+ </div>
+ <div id="main">
+    <div id="mainright"  >
+         <div id="pbs" align="center" width="100%"  style="border-style:solid;border-color:CornflowerBlue ;background-color:Lavender;" >
+                  
+            <b><apex:selectRadio id="rad" onclick="enableField();" layout="LineDirection" value="{!takeId}" >
+                   <apex:selectOptions value="{!items}" />
+               </apex:selectRadio></b> <br/>
+               <apex:outputText rendered="{!errMessage}"> <font color="red"> <b>{!emailMessage}</b></font></apex:outputText>
+               <apex:outputText rendered="{!isError}"> <font color="red"> <b>{!errorMessage}</b></font></apex:outputText><br/>
+         <table align="center" width="100%">
+               <tr><td align="center" >
+                     <b><font size="3" color="green">
+                     <span id="output"> Login Page </span>
+                      </font></b>
+              </td></tr>
+         </table><br/>
+         <table  align="center"  >
+             
+             <tr><td align="right"><b><apex:outputLabel value="User ID" for="uid" /></b></td>
+                 <td><apex:inputText id="uid"  value="{!userid}"/></td>
+            </tr>
+            <tr>
+                <td align="right"><b><apex:outputLabel value="Password" for="pwd"/></b></td>
+                <td><apex:inputSecret id="pwd"  /></td> 
+            </tr>
+            <tr>
+                <td></td>
+                <td align="right"><apex:commandButton value="Login" action="{!login}" onclick="return jsValidate()" style="color:purple" >
+                <!--<td align="right"><apex:commandButton value="Login" action="{!login}" onclick="validateLogin();" style="color:purple" >-->
+                      <apex:param name="msg" value="{!userid}" />
+                      </apex:commandButton>
+                      <!--<input type="button" value="click" onclick="validateLogin();"/>-->
+                </td>
+                
+             </tr>
+             <tr>
+                <td/> 
+                <td ><b><apex:commandLink value="Forgot Your Password ?" action="{!forgotPassword}" style="color:blue" /></b>
+                </td>
+             </tr>
+             <tr/><tr/>
+        </table>
+      </div>
+    </div>
+  </div> 
+ <!-- <script>
+    
+        var sessionId=null;
+        function validateLogin(){
+            console.log('inside validatelogin-----');
+               try{
+                   var userName='baruna@ceptes.com.dev';
+                   var password='barunrss123';
+                   var result = sforce.connection.login(userName,password);
+                    console.log('result --- '+result);
+                    console.log('serverUrl --- '+result.serverUrl);
+                    sessionId=result.sessionId;
+                    console.log('sessionid :'+sessionId);
+                  
+               }catch(error) {
+                    if (error.faultcode.indexOf("INVALID_LOGIN") != -1) {
+                        alert("Your login attempt has failed. The username or password may be incorrect, or your location or login time may be restricted. Please contact the administrator at your company for help");
+                    } else {
+                        alert(error);
+                    }
+              }   
+              
+        }
+       
+  </script> -->
+ 
+    <script type="text/javascript">
+        window.onload=function(){
+            for(i=0;i<4;i++){
+                var bool=document.getElementById("pg:fm:rad:"+i).checked;
+                if(bool == true){
+                    document.getElementById("pg:fm:uid").disabled=false;
+                    document.getElementById("pg:fm:pwd").disabled=false;
+                    break;
+                }else{
+                    document.getElementById("pg:fm:uid").disabled=true;
+                    document.getElementById("pg:fm:pwd").disabled=true;
+                }
+            }
+            //validateLogin();
+        }
+    </script> 
+  <script type="text/javascript">
+         function jsValidate(){
+            var name=document.getElementById("{!$Component.pg:fm:uid}").value;
+            var pwd=document.getElementById("{!$Component.pg:fm:pwd}").value;
+            var takeid = '{!takeId}';
+            if(takeid == "Admin"){
+                return true;
+            }
+            if(name==""){
+                alert('Please Enter Username');
+                return false;
+            }else if(pwd==""){
+                 alert('Please Enter Password');
+                 return false;
+            }
+         }
+    </script>  
+  <script type="text/javascript">  
+    function enableField(){
+        document.getElementById("pg:fm:uid").disabled=false;
+        document.getElementById("pg:fm:pwd").disabled=false;
+        for(i=0;i<4;i++){
+            var bool=document.getElementById("pg:fm:rad:"+i).checked;
+            if(bool == true){
+                var radio=document.getElementById("pg:fm:rad:"+i).value;
+                break;
+            }
+        }
+        document.getElementById("output").innerHTML=radio+" "+"Login Page";
+        return false;
+    }
+  </script>
+ 
+  
+  
+</apex:form>
+
+</apex:page>

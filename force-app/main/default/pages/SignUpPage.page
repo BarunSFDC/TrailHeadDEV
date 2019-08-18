@@ -1,0 +1,57 @@
+<apex:page id="pg" Controller="ResetPassword" sidebar="false"> 
+<apex:form id="fm">
+
+<style type="text/css">
+ #main {
+     padding-top:30px;
+     padding-left:35%;
+     padding-right:35%;
+ }
+ 
+</style>
+
+<script type="text/javascript">
+    function validate(){
+       
+        var name=document.getElementById("{!$Component.pg:fm:pb:uid}").value;
+        var pwd=document.getElementById("{!$Component.pg:fm:pb:pwd}").value;
+        var repwd=document.getElementById("{!$Component.pg:fm:pb:pwd1}").value;
+        if(pwd != repwd){
+            alert('Please check the Re Entered PassWord');
+        return false;
+        } 
+        return true;            
+    }  
+
+</script>
+
+  <div id="main" >
+    <apex:pageBlock title="Sign Up Page" id="pb">
+    
+        <div id="pbs" align="center">
+             <table>
+                <tr>
+                    <td align="right"><apex:outputLabel value="User ID : " for="uid"/></td>
+                    <td><apex:inputText id="uid" value="{!userid}" disabled="true"  />  </td>
+                </tr>
+                <tr>
+                    <td align="right"><apex:outputLabel value="Enter new Password :" for="pwd"/></td>
+                    <td><apex:inputSecret id="pwd"  /></td> 
+                </tr> 
+                <tr>
+                    <td align="right"><apex:outputLabel value="Re Enter Password :" for="pwd1"/></td>
+                    <td><apex:inputSecret id="pwd1" /></td> 
+                </tr> 
+                   
+                <tr>
+                    <td></td>
+                    <td><apex:commandButton value="Save" action="{!login}" onclick="return validate();" /> 
+                    </td>
+                </tr>
+            </table> 
+        </div>
+    </apex:pageBlock>
+   </div>    
+    
+</apex:form>
+</apex:page>

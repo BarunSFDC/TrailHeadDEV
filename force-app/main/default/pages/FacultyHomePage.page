@@ -1,0 +1,232 @@
+<apex:page controller="FacultyHomeController" sidebar="false" showHeader="false" id="pg" >
+<apex:form id="fm" >     
+    <style type="text/css">
+        #header{width: 100%;height: 15%;padding-bottom: 15px;}
+        #Navigation{width: 100%;height: 10%;padding-bottom: 15px;}
+        #hleft {width:23%;height:100%;padding-left:1%;float:left;}
+        #hmiddle {width:75%;height:100%;float:left;padding-left:1%;}
+        #hright {width:26%;height:100%;padding-left:1%;float:left;}   
+        #leftside1 { width:100%;height:100%;padding-left:1%;}        
+        #middle1 {width:100%;height:300px;float:left;}
+        #show_img{background-color:#E3DCDB;} 
+        #status{width:20px;height:100%;float:right;padding-right:10px;padding-top:5px;}        
+    </style>
+    <div id="main">
+        <div id="header">
+            <apex:image url="{!URLFOR($Resource.images, 'image/header.png')}" width="100%" height="60px" /> 
+        </div>
+        <div id="Navigation">
+           <apex:toolbar id="navigation" itemSeparator="line" style="background: #2a6da9; background: -moz-linear-gradient(top, bottom, #55aaee, #003366);background: -webkit-gradient(linear, top, bottom, from(#55aaee), to(#003366));background-image:none; height:25px; broder-color:FF9966">
+              <apex:toolbarGroup itemSeparator="line" location="right">                  
+                  <apex:commandLink action="{!doLogout}" value="Logout" style="color:white;"/>
+              </apex:toolbarGroup>
+          </apex:toolbar>
+        </div>
+        <div id="hleft">
+           <div id="leftside1" >
+            <apex:pageBlock tabStyle="faculty__c" >
+                <apex:pageBlockSection title="My Settings" id="pbs1" columns="1"  > 
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Welcome," />
+                        <apex:outputText value="{!userName.First_Name__c} {!userName.Last_Name__c}" style="color:violet; font-weight:bold; font-size:12px" /> 
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:image url="{!URLFOR($Resource.images, 'image/gmail_M_icon.gif')}"/>
+                        <apex:outputText >{!userName.Email_Id__c}</apex:outputText>
+                    </apex:pageBlockSectionItem> 
+                    <apex:pageBlockSectionItem >
+                        <apex:image url="{!URLFOR($Resource.CTPImages, 'Imz/PhoneIcon.gif')}" />
+                        <apex:outputText >{!userName.Mobile_No__c}</apex:outputText>
+                    </apex:pageBlockSectionItem> 
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+            </div> 
+            
+             <div id="leftside1">                  
+                <apex:pageBlock tabStyle="faculty__c">
+                    <apex:pageBlockSection columns="1" title="Query Portal">
+                        <apex:outputLink value="/apex/Ctp_Query_Portal_page" ><b>Posts ( {!newlypost} )..</b>
+                            <apex:param name="faid" value="{! userName.Facultys__r[0].Id}"/>
+                            <apex:param name="type" value="{!userName.Type__c}"/>
+                            <apex:param name="name" value="{!userName.First_Name__c}"/>
+                        </apex:outputLink>                        
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+            </div> 
+            
+            <div id="leftside1" >         
+            <apex:pageBlock tabStyle="faculty__c" >
+                <apex:pageBlockSection title="Go For TimeSheet" >
+                    <apex:outputLink value="/apex/TimeSheetEntry" target="_blank" >
+                        <font ><b>Time Sheet Entry</b></font>
+                    </apex:outputLink>
+                </apex:pageBlockSection>    
+             </apex:pageBlock>   
+            </div>
+                    
+            <div id="leftside1" >  
+                <apex:pageBlock tabStyle="faculty__c" >
+                    <apex:pageBlockSection title="Examination Details" columns="1" >
+                       <apex:outputLink value="/apex/Ctp_Create_QustionAnswer" target="_blank" >
+                           <font color="blue">Create Questions</font>
+                           <apex:param name="fid" value="{! userName.Facultys__r[0].Id}"/>
+                           <apex:param name="type" value="{!userName.Type__c}"/>
+                       </apex:outputLink>
+                       <apex:outputLink value="/apex/questionsetpage" target="_blank" >
+                           <font color="blue">Create Question Sets</font>
+                       </apex:outputLink>
+                       <apex:outputLink value="/apex/SendLinkForExam" target="_blank" >
+                           <font color="blue">Send links to students</font>
+                       </apex:outputLink>                                                              
+                    </apex:pageBlockSection>    
+                 </apex:pageBlock>              
+            </div> 
+         </div>
+
+         <div id="hmiddle">              
+             <div id="middle1" >           
+                 <apex:pageBlock tabStyle="faculty__c" id="pbfirst">
+                     <apex:pageBlockSection title="Session Status" columns="1" id="pbsfirst" >
+                        <apex:outputPanel id="uppop" layout="block" >
+                        <table  width="100%">
+                            <tr >
+                                <td  align="center"><b><font size="2px">Batches :</font></b>&nbsp;&nbsp;&nbsp;
+                                     <apex:selectList size="1" value="{!selectedbatch}" id="slist" style="font-size:12px" >
+                                         <apex:selectOption itemValue="All Batches" itemLabel="All Batches"/> 
+                                         <apex:selectOptions value="{!batchList}"   />
+                                         <apex:actionSupport event="onchange" action="{!showEntryDet}"   reRender="lowpb"/>
+                                     </apex:selectList>
+                                </td> 
+                                <td align="right">
+                                    <apex:commandButton id="img" action="{!refreshPage}" image="{!URLFOR($Resource.CTPImages, 'Imz/refresh.png')}" title="Refresh" oncomplete="refreshDet();"   style="width:10px" reRender="pbfirst"/>
+                                </td>
+                            </tr>
+                        </table> <br/>
+                         <table width="100%" height="12px" >
+                            <tr>
+                                <td align="left"  ><apex:commandButton id="btn3" value="All Days" action="{!allDayData}" reRender="lowpb" oncomplete="buttonColor(this.id);"   style="height:20px;width:40px;font-size:8px;"/></td>
+                                <td width="80%" align="center"><b>
+                                    <apex:selectRadio layout="lineDirection" value="{!status}">
+                                        <apex:selectOption itemValue="All" itemLabel="All" />
+                                        <apex:selectOption itemValue="Completed" itemLabel="Completed" />
+                                        <apex:selectOption itemValue="Not Started" itemLabel="Not Started" />
+                                        <apex:selectOption itemValue="Not Available" itemLabel="Not Available" />
+                                        <apex:actionSupport event="onchange" action="{!sessStatusDetails}" reRender="lowpb" />
+                                    </apex:selectRadio></b>
+                                </td>
+                                <td align="center"><apex:commandButton id="btn1" image="{!URLFOR($Resource.backward)}" value="Past" action="{!pastData}" oncomplete="buttonColor(this.id);" reRender="lowpb" style="height:12px;width:20px;" title="Past" /></td> 
+                                <td align="center"> <apex:commandButton id="btn2" value="Today" action="{!toDaysData}" reRender="lowpb" oncomplete="buttonColor(this.id);"  style="height:20px;width:35px;font-size:8px;"/></td> 
+                                <td align="center"><apex:commandButton id="btn4" image="{!URLFOR($Resource.forward)}" action="{!upCommingData}" oncomplete="buttonColor(this.id);" reRender="lowpb"  style="height:12px;width:20px;"  title="UpComming"/> </td> 
+                              
+                            </tr>
+                        </table> <br/>                         
+                      </apex:outputPanel>                  
+                      <apex:outputPanel >
+                      <table width="100%"> 
+                         <center><div id="show_img" >
+                                <div id="img0"  style="display:none;"><apex:commandButton image="{!URLFOR($Resource.CTPImages, 'Imz/CheckMark.gif')}" action="{!taskDone}" oncomplete="buttonClick();" title="Done" status="myStatus" reRender="lowpb"/></div>
+                                <div id="img1" style="display:none;"><apex:commandButton image="{!URLFOR($Resource.NotAvailable)}" style="height:16px;width:15Px;" action="{!taskNotDone}"  oncomplete="buttonClick();" title="Not available" status="myStatus"   reRender="lowpb"/> </div>   
+                                <div id="status">
+                                    <apex:actionStatus stopText="" id="myStatus">
+                                        <apex:facet name="start">
+                                            <img src="/img/loading.gif" />
+                                        </apex:facet>
+                                    </apex:actionStatus> 
+                                </div>  
+                          </div> </center>
+                      </table>  
+                      <apex:outputPanel id="lowpb" layout="block" style="overflow:auto; height:20%;">   
+                         <apex:pageBlockTable id="pbtbl1" value="{!entDetails}" var="tdtask" >
+                            <apex:column >
+                                <div id="chkbx">
+                                    <apex:facet name="header"> <apex:inputCheckbox id="checked" onclick="checkAll({!entDetails.size});" /></apex:facet>
+                                    <apex:inputCheckbox id="showpoptoday" value="{!tdtask.sEntRec.selectsesion__c}" onclick="showPopupTd({!entDetails.size});" disabled="{!if(tdtask.sEntRec.Status__c != 'Not Started',true,false)}"  />
+                                </div>
+                            </apex:column>
+                            <apex:column headerValue="Course" value="{!tdtask.sEntRec.Course_Name__c}"/>
+                            <apex:column headerValue="Batch" value="{!tdtask.sEntRec.Batch_Name__c}" />
+                            <apex:column headerValue="Name" value="{!tdtask.sEntRec.Session_Name__c}"/>
+                            <apex:column headerValue="Type" value="{!tdtask.sEntRec.Session_Type__c}"/>
+                            <apex:column headerValue="Start Date" value="{!tdtask.sEntRec.StartDate__c}"/>
+                            <apex:column headerValue="Start Time" value="{!tdtask.sEntRec.Start_Time__c}"/>                                 
+                            <apex:column headerValue="No Of Hours" value="{!tdtask.sEntRec.No_Of_Hours__c/60}hrs"/>  
+                            <apex:column headerValue="Status" value="{!tdtask.sEntRec.Status__c}"/>                                
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlockSection>
+            </apex:pageBlock> <br/>  
+        </div>  
+      </div>
+    </div>
+    
+    <apex:includeScript value="{!$Resource.jquery142}"/>        
+    <script type="text/javascript">
+        window.onload = setupPage;           
+        function setupPage(){ 
+            $('div[id^=img]').hide();
+            document.getElementById('pg:fm:pbfirst:pbsfirst:btn2').style.background  = '#E3DCDB';
+        } 
+        var lastind = '2'; 
+        var showdiv = false; 
+        function showPopupTd(tdsize){
+            for(i=0;i<tdsize;i++){
+                    showdiv=document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').checked;
+                    if(showdiv &&  !document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').disabled)                        
+                        break;                           
+            }    
+                
+            if(lastind == '1' && showdiv &&  !document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').disabled){                           
+                $('#img0').show();              
+                $('#img1').hide(); 
+            }else if(lastind == '2' && showdiv &&  !document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').disabled){
+                $('#img0').show();              
+                $('#img1').show();                                
+            }else if(lastind == '4' && showdiv &&  !document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').disabled){
+                $('#img0').hide();              
+                $('#img1').show(); 
+            }else
+                $('div[id^=img]').hide();      
+        }    
+        
+        function refreshDet(){
+            $('div[id^=img]').hide(); 
+        }
+             
+        function buttonColor(btnId){ 
+            $('div[id^=img]').hide();
+            lastind=btnId.charAt(btnId.length-1);
+            if(lastind == '3'){
+                $('div[id = chkbx]').hide();
+                document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:checked').style.visibility="hidden";  
+            }
+            for(i=1;i<5;i++){                
+                if('pg:fm:pbfirst:pbsfirst:btn'+i == btnId)
+                    document.getElementById(btnId).style.background  = '#E3DCDB'; 
+                else
+                    document.getElementById('pg:fm:pbfirst:pbsfirst:btn'+i).style.background = ''; 
+            }                  
+        }
+        
+        function buttonClick(){
+            showdiv = false;      
+            $('div[id^=img]').hide();       
+        }
+        function checkAll(tabSize){            
+            if(document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:checked').checked){
+                for(i=0;i<tabSize;i++){
+                    if(!document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').disabled)
+                        document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').checked=true;  
+                }  
+            }else{
+                for(i=0;i<tabSize;i++){
+                    if(!document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').disabled)
+                        document.getElementById('pg:fm:pbfirst:pbsfirst:pbtbl1:'+i+':showpoptoday').checked=false;                    
+                } 
+            }
+            showPopupTd(tabSize);
+        }  
+       
+    </script>
+</apex:form>
+</apex:page>

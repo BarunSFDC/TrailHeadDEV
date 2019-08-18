@@ -1,0 +1,116 @@
+<apex:page controller="Ctp_PreparedExam" id="pg" sidebar="false" showHeader="false">
+    <style type="text/css">
+        #main{ width:1120px;height:400px; padding-left:200px; background-color:#3090C7;padding-top:50px;}
+        #homepage {width:750px;height:300px;float:left; }
+        #middle{width:750px;height:300px;float:left; padding-left:30px;} 
+        #headerdesc{width:450px;height:16px;padding-left:270px;} 
+        #headerdescTimer{width:200px;height:16px;float:left;}
+        #headerdescSkip{width:150px;height:16px;float:right;} 
+        #headerdescTot{width:100px;height:16px;float:right;}  
+        #buttondet{width:550px;height:18px;padding-left:200px;} 
+        #buttondetleft{width:400px;height:16px;float:left;}
+        #buttondetright{width:150px;height:24px;float:right;}
+        #subskip{width:430px;height:20px;padding-left:315px;}
+        #sub{width:150px;height:16px;float:left;}
+        #skip{width:150px;height:16px;float:right;}
+        #ansdet{width:150px;height:12px;float:right;}
+        #examend{width:400px;height:30px;padding-left:300px;background-color:#3090C7;}
+        #completeResult{width:750px;height:200px;float:left; padding-left:30px;} 
+    </style>
+  <apex:form id="fm">
+      <div id="main">
+          <div id="homepage">              
+              <apex:pageBlock tabStyle="Question__c" id="pb" >
+                  <apex:pageblockSection title="Online Examination" columns="1"   />                  
+                  <div id="headerdesc">
+                  <apex:pageMessages />
+                      <div id="headerdescTimer"><center><font size="2px">Timer :</font><apex:inputText id="timer" style="border:none;width:50px;font-size:12px;color:maroon" /></center></div>
+                       <div id="headerdescTot"><center><font size="2px">{!j+1}/{!noOfQuestions}</font></center></div>
+                       <div id="headerdescSkip">
+                          <center><apex:commandButton value="View skipped all" action="{!goToSkippedQuestion}" disabled="{!skipDisable}" reRender="pb"/>
+                                 <font size="2">({!skpInd}/{!skippedIndex.size})</font>
+                          </center>                                      
+                      </div>                         
+                  </div><br/>
+                  <apex:pageBlockSection columns="1" id="pbs" rendered="{!!completeresult}" >
+                     <b><font size="2px"> {!question} </font></b>
+                      <apex:pageblockSection columns="1">                              
+                          <apex:selectRadio layout="pageDirection" rendered="{!ifCheck}" style="font-size:12px" value="{!selectedRadio}"> 
+                               <apex:selectOptions value="{!answerList}"  />
+                          </apex:selectRadio>
+                          <apex:dataTable value="{!multiChk}" var="mul" rendered="{!!ifCheck}" >
+                              <apex:column width="25px"  >
+                                <apex:inputCheckbox value="{!mul.selectch}"/>
+                              </apex:column>
+                              <apex:column >
+                                  <font size="2px"><apex:outputText value="{!mul.abank.Possible_Answer__c}" /></font>
+                              </apex:column>
+                          </apex:dataTable>
+                      </apex:pageblockSection> 
+                  </apex:pageblockSection>  
+                  <div id="buttondet" >
+                      <div id="buttondetleft" ><apex:outputText rendered="{!isError}"><font color="blue" size="3">{!errorMessage}</font></apex:outputText></div>
+                      <div id="buttondetright" >
+                          <apex:commandButton id="nextqst" oncomplete="complteExam({!completeresult});" value="Next question >>" action="{!nextQuestion}"  rerender="pb" style="font-style:italic;font-size:9px;"   disabled="{!nextQst}" /></div>
+                  </div> 
+                  <div id="subskip">
+                      <div id="sub">
+                          <center>
+                              <apex:commandButton value="Submit" action="{!submitAnswer}" disabled="{!submitShow}" style="width:40px" reRender="pb"/>
+                              <apex:commandButton value="Skip" action="{!skipQuestion}" disabled="{!skipShow}" style="width:40px" reRender="pb"/>                           
+                          </center>                 
+                      </div>
+                      <div id="skip"><b><i><font color="blue"><apex:outputText id="op" value="InCorrect:{!incorr}" /> </font></i></b></div>
+                  </div>                               
+              </apex:pageBlock>                      
+          </div>          
+          <div id="completeResult">
+              <apex:pageBlock >
+                  <apex:outputText ><center><font color="blue" size="4px">Click complete ! check your mail and get the exam detal.</font></center><br/>
+                      <center>                         
+                          <apex:commandButton value="Complete"   action="{!sentMail}" reRender="pb"/>
+                      </center>
+                  </apex:outputText>
+              </apex:pageBlock>
+          </div>     
+      </div>
+    <script type="text/javascript">   
+        window.onload= function(){ document.getElementById("completeResult").style.display="none";timeFun();}
+          var d1 = new Date();
+          d1.setHours(00,{!noOfQuestions},00); 
+       
+       //   var d1;
+       //   function  showTimer(){
+         //       d1 = new Date();
+          //      d1.setHours(00,00,30); 
+           //     timeFun(); 
+                
+         //   }                     
+            function timeFun(){ 
+                var h= d1.getHours();
+                var m= d1.getMinutes();
+                var s=d1.getSeconds();
+                m= (m<10)?"0"+m : m;
+                s= (s<10)? "0"+s : s;                    
+                var el= document.getElementById("pg:fm:pb:timer");
+                el.value= h+":"+m+":"+s;
+                d1.setSeconds(d1.getSeconds()-1);
+                if( h==0 && m==0 && s==0 ){                    
+                    alert('Time is Up,Click ok to submit your answers.');                    
+                    document.getElementById("homepage").style.display="none"; 
+                    document.getElementById("completeResult").style.display="block"; 
+                }else{   
+                    clearTimeout(t);                  
+                    var t= setTimeout("timeFun()",1000); 
+               }  
+           }
+           function complteExam(bool){
+               if(bool){
+                   //alert('Your eaxm is completed.Click ok to submit your answers.');                    
+                   document.getElementById("homepage").style.display="none"; 
+                   document.getElementById("completeResult").style.display="block";    
+               }
+           }
+    </script>
+  </apex:form>
+</apex:page>

@@ -1,0 +1,80 @@
+<apex:page id="pg" controller="SendLinkController" sidebar="false" showHeader="false">
+    <apex:form >
+    <style type="text/css">
+        #top{ width: 90%;height:380px; padding-left:20%; padding-top:20px;background-color:#3090C7;}
+        #inner{ width:70%;height:370px;float:center;background-color:#E6E6E6}  
+        #topabove{width:100%;height:280px;float:left;}
+        #topleft{ width:50%;height:250px;float:left;}
+        #topright{width:50%;height:260px;background-color:#D5C5C5 }  
+        #buttons{width:100%;height:15px;}    
+    </style>
+    <div id="top" >        
+        <div id="inner">
+            <apex:pageBlock title="Send Exam Links" id="pb">
+                 <div id="topabove">
+                     <div id="topleft"><br/><br/>
+                         <apex:pageMessages />
+                         <apex:pageBlockSection id="pbs1" > 
+                             <apex:pageBlockSectionItem >
+                             </apex:pageBlockSectionItem>
+                             <apex:pageBlockSectionItem >
+                             </apex:pageBlockSectionItem>
+                             <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Course:" style="font-size:10px;font-style:italic" />
+                                <apex:selectList value="{!courseId}" size="1" style="font-size:10px;font-style:italic;width:100%">
+                                    <apex:selectOption itemLabel="-select-" itemValue="" /> 
+                                    <apex:selectoptions value="{!courseDet}" />
+                                    <apex:actionSupport event="onchange" action="{!showBatch}" reRender="pb" />
+                                </apex:selectList>
+                            </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Batch:" style="font-size:10px;font-style:italic"  />
+                                <apex:selectList value="{!batchId}" size="1" style="font-size:10px;font-style:italic;width:100%">
+                                    <apex:selectOption itemLabel="-select-" itemValue="" />
+                                    <apex:selectoptions value="{!batchDet}" />
+                                    <apex:actionSupport event="onchange" action="{!showStudent}" reRender="pb" />
+                                </apex:selectList>
+                             </apex:pageBlockSectionItem>
+                          </apex:pageBlockSection><br/><br/><br/>
+                          <apex:outputText rendered="{!showSection}"><center><font size="3" color="blue"> Select one question set and send the link.</font></center></apex:outputText>
+                          <apex:pageBlockSection id="leftbelow" rendered="{!showSection}">
+                             <apex:pageBlockSectionItem >
+                               <apex:outputText rendered="{!isError}"><font color="red" size="3px"><I><center>Select one set.</center></I></font></apex:outputText> 
+                            </apex:pageBlockSectionItem> 
+                            <apex:pageBlockSectionItem >
+                            </apex:pageBlockSectionItem>                           
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Sets:" style="font-size:10px;font-style:italic"  />
+                                <apex:selectList size="1" value="{!setId}" style="font-size:10px;font-style:italic;width:100%">
+                                    <apex:selectOption itemLabel="-select-" itemValue="" />
+                                    <apex:selectoptions value="{!questionSet}" />
+                                    <apex:actionSupport event="onchange" action="{!checkQuestionSet}" reRender="pb"/>
+                                </apex:selectList>
+                            </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem >
+                                <apex:commandButton value="Send Links"  action="{!sendLinksToStudents}" reRender="pb" id="btn" style="font-style:italic;font-size:8px"/>
+                            </apex:pageBlockSectionItem>
+                        </apex:pageBlockSection>                        
+                    </div>   
+                    <div id="topright" style="overflow:auto;"> 
+                        <apex:pageBlockSection columns="1" id="pbs2" >
+                            <apex:pageBlockTable value="{!studentRec}" var="std">
+                                <apex:column width="30px">
+                                    <apex:inputCheckbox value="{!std.check}" disabled="{!std.check}"/>
+                                </apex:column>
+                                <apex:column headerValue="First Name" value="{!std.stuRec.UserInfoId__r.First_Name__c }" width="150px" />
+                                <apex:column headerValue="Last Name" value="{!std.stuRec.UserInfoId__r.Last_Name__c }" />                                
+                            </apex:pageBlockTable>    
+                        </apex:pageBlockSection>                    
+                    </div>  <br/>
+                    <div id="buttons">
+                        <center>                            
+                            <apex:commandButton value="Cancel" action="{!refreshPage}" reRender="pb"/>
+                        </center>
+                    </div>                  
+                </div>
+            </apex:pageBlock>  
+       </div>        
+    </div>     
+    </apex:form>
+</apex:page>

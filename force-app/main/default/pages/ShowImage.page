@@ -1,0 +1,6 @@
+<apex:page >
+    <h3>Images</h3>
+    <p>Kitten:
+        <apex:image url="{!URLFOR($Resource.vfimagetest ,'cats/kitten1.jpg')}" width="50" height="50" />
+    </p>
+</apex:page>

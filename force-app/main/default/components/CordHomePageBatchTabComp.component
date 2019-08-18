@@ -1,0 +1,152 @@
+<apex:component controller="CordHomePageBatchTabContlr" allowDML="true" id="pg" >
+
+<apex:form id="fm">
+<style type="text/css">
+ #commnd {
+    text-align:center;
+    }
+</style>
+    <apex:pageBlock tabStyle="Session__c" mode="edit" id="pgblk"   > <br/>        
+            <div id="commnd">    
+               <apex:commandButton value="New Batch" action="{!doNewBatch}" id="cbid" reRender="pgblk"  /> 
+            </div>  
+            <div width="100%" height="15px"> 
+               <table width="100%">
+                   <tr>
+                    <td >
+                       <apex:commandButton value="Show All" action="{!allBatches}" reRender="pgblk"/>
+                    </td>
+                    <td align="right" width="400px">
+                       <table  height="1%"  style="border-style:plain;  background-color:#E3DCDB;">
+                           <tr>
+                           <td>
+                             <apex:selectList id="firstSl" multiselect="false" size="1" value="{!name}">
+                                    <apex:selectOption itemValue="Name" itemLabel="Name"/>
+                                    <apex:selectOption itemValue="Course" itemLabel="Course Name"/>
+                                    <apex:selectOption itemValue="Batch" itemLabel="Batch Name"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                             <apex:selectList id="secondsl" size="1" value="{!condtion}">
+                                 <apex:selectOption itemValue="Condition" itemLabel="Condition"/>
+                                 <apex:selectOption itemValue="Equals To" itemLabel="Equals To"/>
+                                 <apex:selectOption itemValue="Like" itemLabel="Starts With"/>
+                             </apex:selectList>
+                           </td>
+                           <td>
+                                <apex:inputText id="input" value="{!text}" maxlength="50" size="25" />
+                           </td>               
+                           <td>         
+                                <apex:commandButton action="{!filterBatchCourse}"  reRender="pgblk" value="Go!"  />
+                           </td>
+                         </tr>
+                       </table>     
+                   </td> 
+               </tr>
+            </table> 
+        </div><br/>
+       
+        <apex:outputPanel layout="block"  style="overflow:auto; height:160px"  > 
+            <apex:pageMessages ></apex:pageMessages>
+            <apex:pageBlockTable value="{!selectBatch}" var="selbat" id="pbtbl" width="100%"  >
+                <apex:column headerValue="Action" >
+                    <apex:commandLink value="View" action="{!viewRecord}"   reRender="pgblk" style="color:blue"> 
+                      <apex:param name="cmdel" value="{!selbat.Id}" assignTo="{!batchId}"/>
+                    </apex:commandLink>&nbsp;&nbsp;
+                    <apex:commandLink value="Edit" action="{!editRecord}" oncomplete="if({!iserror}){alert('The batch is already started.Now you cannot edit it.')}"  reRender="pgblk" style="color:blue"> 
+                      <apex:param name="cmdel" value="{!selbat.Id}" assignTo="{!batchId}"/>
+                    </apex:commandLink>&nbsp;&nbsp;
+                    <apex:commandLink value="Del" action="{!deleteRec}" onclick="if(confirm('Are you sure?')){}else{return false;}"   reRender="pgblk" style="color:blue"> 
+                       <apex:param name="cmdel" value="{!selbat.Id}" assignTo="{!batchId}"/>
+                    </apex:commandLink>
+                </apex:column>
+                <apex:column headerValue="Batch Name" value="{!selbat.Name}" />
+                <apex:column headerValue="Course Name" value="{!selbat.CourseId__r.Name}" />
+                <apex:column headerValue="Start Date" value="{!selbat.Start_Date__c}"/>
+                <apex:column headerValue="Start Time" value="{!selbat.Start_Time__c}"/>
+                <apex:column headerValue="End Time" value="{!selbat.End_Time__c}" />                
+            </apex:pageBlockTable>  <br/>    
+        </apex:outputPanel>  <br/>  
+        
+        <apex:pageBlockSection title="New Batch" columns="1"  id="pbs" rendered="{!(showBatch)}">                 
+            <apex:pageBlockSectionItem id="pbsi20">
+                <apex:outputLabel value="Course Name :"  />
+                <apex:inputField value="{!bat.CourseId__c}" id="pbsi20if" required="true"/>                                        
+            </apex:pageBlockSectionItem>                                
+          
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Start Date :"  />
+                <apex:inputField value="{!bat.Start_Date__c}"  />                                      
+            </apex:pageBlockSectionItem> 
+            
+            <apex:OutputText rendered="{!isError}"><center><font color="red" size="3">{!errorMessage}</font></center></apex:OutputText>
+            <apex:pageBlockSectionItem id="pbsitemstime" >
+                 <apex:outputLabel value="Start Time:" for="slist2"/>                          
+                 <apex:selectList id="slist2" value="{!starttime}"  size="1">   
+                     <apex:selectOptions id="sop" value="{!TimeFormatHour}" />
+                 </apex:selectList>                                      
+            </apex:pageBlockSectionItem>              
+            <apex:pageBlockSectionItem id="pbsi" > 
+                 <apex:outputLabel value="End Time:" for="eid" />
+                 <apex:selectList id="eid" value="{!endtime}"  size="1">  
+                       <apex:selectOptions id="sop" value="{!TimeFormatHour}" />
+                 </apex:selectList>   
+            </apex:pageBlockSectionItem> 
+            <apex:pageBlockSectionItem id="pbsi2" >
+                <apex:outputLabel value="Batch Name :" id="LN" />
+                <apex:inputField value="{!bat.Name}" id="facln" required="true" />    
+            </apex:pageBlockSectionItem>  
+          <!--  <apex:pageBlockSectionItem id="pbsi3" > 
+                 <apex:outputLabel value="Faculty:" for="fid" />
+                 <apex:selectList id="fid" value="{!fName}"  size="1" > 
+                     <apex:selectOption itemValue="" itemLabel="-select-"  /> 
+                     <apex:selectOptions id="sop" value="{!facultyList}" />
+                 </apex:selectList>   
+            </apex:pageBlockSectionItem>            
+          -->
+            <apex:pageBlockSectionItem id="pbsi21" >
+                <apex:outputLabel value="WeekDay Detail :" id="LN" />
+                <apex:inputField value="{!bat.WeekDay_Det__c}" id="facln" required="true" />   
+            </apex:pageBlockSectionItem>                                 
+        </apex:pageBlockSection>   
+        
+        <apex:pageBlockSection title="{!bat.Name}" columns="1"  id="pbs1" rendered="{!viewBatch}" collapsible="true">                 
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Course Name :"  />
+                <apex:outputText value="{!bat.CourseId__r.Name}" />  
+            </apex:pageBlockSectionItem> 
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Start Date :"  />
+                <apex:outputText value="{!bat.Start_Date__c}"  />                                      
+            </apex:pageBlockSectionItem>             
+            <apex:pageBlockSectionItem >
+                 <apex:outputLabel value="Start Time:" for="slist2"/>                          
+                 <apex:outputText value="{!bat.Start_Time__c}" />                                  
+            </apex:pageBlockSectionItem>              
+            <apex:pageBlockSectionItem > 
+                 <apex:outputLabel value="End Time:"  />
+                 <apex:outputText value="{!bat.End_Time__c}" />   
+            </apex:pageBlockSectionItem> 
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Batch Name :"  />
+               <apex:outputText value="{!bat.Name}"/>    
+            </apex:pageBlockSectionItem> 
+            <apex:pageBlockSectionItem id="pbsi21" >
+                <apex:outputLabel value="WeekDay Detail :"  />
+                <apex:outputText value="{!bat.WeekDay_Det__c}"  />   
+            </apex:pageBlockSectionItem>                                 
+        </apex:pageBlockSection>         
+
+        <apex:pageBlockButtons location="bottom"  >
+            <apex:commandButton value="Edit" action="{!editRecord}" rendered="{!viewBatch}"   reRender="pgblk"  />
+            <apex:actionRegion >    
+                <apex:commandButton value="cancel"  action="{!cancelCourseDetail}"  rendered="{!viewBatch}" reRender="pgblk"   />   
+            </apex:actionRegion>
+            <apex:commandButton value="Save" action="{!batSavePage}" rendered="{!showBatch}"  reRender="pgblk"  />
+            <apex:actionRegion >    
+                <apex:commandButton value="cancel"  action="{!cancelCourseDetail}"  rendered="{!showBatch}" reRender="pgblk"   />   
+            </apex:actionRegion>
+        </apex:pageBlockButtons>  
+    </apex:pageBlock>
+</apex:form> 
+</apex:component>

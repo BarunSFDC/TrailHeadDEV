@@ -1,0 +1,21 @@
+<apex:page controller="Ctp_Exam_Det" renderAs="pdf"  standardStylesheets="false">
+<style type="text/css">
+    #top {padding-top:30px;padding-left:50px;padding-right:200px;}
+    #inner{width:800px;padding-top:30px;padding-left:100px;}
+</style>
+    <apex:form >
+        <div id="top">
+            <div id="inner">
+                <apex:pageBlock >
+                    <apex:pageBlockSection columns="1">
+                        <b><font size="4px">Mr. Barun kumar Jena following is your dev_set1 Exam details on 11/11/11.You can verify it.</font></b>
+                        <apex:pageBlockTable value="{!questDet}" var="qs" rules="none" cellpadding="8px">
+                            <apex:column value="{!qs.srno}." width="15px" style="font-size:11px"/>
+                            <apex:column headerValue="" value="{!qs.examRec.Question__c}" style="font-size:11px"/>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+            </div>
+        </div>
+    </apex:form>  
+</apex:page>

@@ -1,0 +1,56 @@
+<apex:page controller="CoordinatorHomeController" sidebar="false" showHeader="false" id="pg" > 
+<apex:form id="fm" >   
+
+<style>
+   .activeTab {background-color:#D3E0F0; color:black; background-image:none}
+   .inactiveTab { background-color:#4D9DEC; color:white; background-image:none}
+</style>
+ 
+
+    <div> 
+        <apex:image value="{!URLFOR($Resource.CTPImages, 'Imz/MainHeader.png')}" width="100%" height="80"/>
+    </div>
+
+     <div id="log">
+       <apex:commandLink value="Sign Out"  action="{!doSignOut}"  style="color:red"  />
+     </div> 
+     <c:DatePicker ></c:DatePicker>    
+</apex:form>
+   
+ <apex:tabPanel switchType="client"  selectedTab="tabdetails" tabClass="activeTab" inactiveTabClass="inactiveTab" id="tp" >
+      
+     <apex:tab label="Home" name="Home" id="tb"  >
+        <c:CordHomePageHomeTabComp id="cordHomeTab" >
+        </c:CordHomePageHomeTabComp>         
+     </apex:tab>
+
+
+     <apex:tab label="Course" name="Course" id="cor" >
+         <c:CordHomePageCourseTabComp id="cordCBTab" >
+         </c:CordHomePageCourseTabComp>          
+     </apex:tab>
+
+
+     <apex:tab label="Batch" name="Batch" id="bat"  >
+        <c:CordHomePageBatchTabComp id="cordBatchTab" >
+        </c:CordHomePageBatchTabComp>
+     </apex:tab>
+
+
+     
+     <apex:tab label="Faculty" name="Faculty" id="fac" >
+        <c:CordFacultyRegdPageComp id="cordFactTab">
+        </c:CordFacultyRegdPageComp>    
+     </apex:tab>
+
+     <apex:tab label="Student" name="Student" id="stu" >
+        <c:CoStudentRegdPageComp id="cordStuTab" >
+        </c:CoStudentRegdPageComp>
+     </apex:tab>  
+     
+     
+ </apex:tabPanel>     
+    
+<!-- </apex:form> -->
+
+</apex:page>

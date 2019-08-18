@@ -1,0 +1,122 @@
+<apex:page id="pg" sidebar="false" controller="Ctp_Feedback_pdf" renderAs="pdf"  standardStylesheets="false">       
+  <center>
+  <div id="top">
+      <apex:image value="{!URLFOR($Resource.CtpLogo)}" width="6%" height="60" /> &nbsp;&nbsp;&nbsp; 
+      <apex:image value="{!URLFOR($Resource.CTPImages, 'Imz/MainHeader.png')}" width="89%" height="60"/>
+  </div></center><br/>
+  <div align="center"><font size="3px"><b> Training Feedback Form</b></font></div><br/>     
+     <table width="80%" rules="all" align="center" border="1">
+         <tr height="16px">
+             <td width="10%"><b>Course Name :</b></td>
+             <td width="50%">
+                 <apex:outputLabel value="{!cff.fed_CourseId__c}" />
+             </td>
+             <td width="8%"><b>Faculty Name :</b></td>
+             <td>
+                 <apex:outputLabel value="{!cff.fed_Faculty__c}" />
+             </td>             
+         </tr>
+         <tr height="16px">
+             <td><b>Session Name :</b></td>
+             <td>
+                  <apex:outputLabel value="{!cff.fed_SessionId__c}" />
+             </td>
+             <td><b>Duration(hrs) :</b></td>
+             <td><apex:outputLabel value="{!cff.fed_Duration_hrs__c}"  /></td>
+         </tr>
+         <tr height="16px">
+             <td><b>Training Date :</b></td>
+             <td><b>From:</b><apex:outputLabel value="{!fromDate}" />&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+                 <b>To:</b><apex:outputLabel value="{!toDate}" />
+             </td>
+             <td/><td/>
+         </tr>
+     </table><br/>
+    <div  style="width:100%;height:16px;padding-top:5px;float:center;"><center><font size="3px"><b> Participant's Feedback</b></font></center></div> 
+    <div  style="width:100%;"><center><i><b>Note:5 stands for Excellent,1 for poor AND NA for Not applicable.</b></i></center></div><br/>
+    <table width="80%" align="center" rules="all" border="1">
+        <tr bgcolor="silver">
+            <td width="80%"><font size="2px"><center><b>Aspect</b></center></font></td>
+            <td><font size="2px"><center><b> Rating </b></center></font></td>    
+        </tr>        
+    </table>   
+     
+     <table width="80%" align="center" rules="all" border="1">
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Relevance of Course</font></td>
+            <td align="center">{!if(cff.fed_Course_Relevance__c == 0.0,'NA',ratingList[0])}</td>           
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Clarity of Course Objectives</font></td>
+            <td align="center" >{!if(cff.fed_Clarity__c == 0.0,'NA',ratingList[1])}</td>                    
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Quality of Excercises</font></td>
+            <td align="center" >{!if(cff.fed_Excercise_quality__c == 0.0,'NA',ratingList[2])}</td>                   
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Hands on Exposure</font></td>
+            <td align="center" >{!if(cff.fed_Handson__c == 0.0,'NA',ratingList[3])}</td>                 
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Adequate Lab Support</font></td>
+            <td align="center" >{!if(cff.fed_Lab_Support__c == 0.0,'NA',ratingList[4])}</td>                 
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Facilities</font></td>
+            <td align="center" >{!if(cff.fed_Facilities__c == 0.0,'NA',ratingList[5])}</td>                   
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Effectiveness of Faculty to meet Course Objectives</font></td>
+            <td align="center" >{!if(cff.fed_Faculty_Effectiveness__c == 0.0,'NA',ratingList[6])}</td>                 
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Transfer of Knowledge</font></td>
+            <td align="center" >{!if(cff.fed_Kt__c == 0.0,'NA',ratingList[7])}</td>                
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Level of Interaction and Participation</font></td>
+            <td align="center" >{!if(cff.fed_Interaction__c == 0.0,'NA',ratingList[8])}</td>                      
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Presentation of Material</font></td>
+            <td align="center" >{!if(cff.fed_Presentation_does__c == 0.0,'NA',ratingList[9])}</td>        
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Presentation of Trainer</font></td>
+            <td align="center">{!if(cff.fed_Training_review__c == 0.0,'NA',ratingList[10])}</td>          
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Overall Rating of the Trainer</font></td>
+            <td align="center" >{!if(cff.fed_Trainer_Rating__c == 0.0,'NA',ratingList[11])}</td>        
+        </tr>
+        <tr>
+            <td width="80%" height="20px"><font size="2px">Where your overall expectation met?</font></td>
+            <td align="center" >{!if(cff.fed_Course_Rating__c == 0.0,'NA',ratingList[12])}</td>
+        </tr>
+    </table><br/>
+    <table width="80%" align="center" rules="all" border="1">
+        <tr ><td height="20px" bgcolor="silver">
+            <center><font size="3px"><b> Descriptive Opinion</b></font><br/></center>
+        </td></tr>
+        <tr><td>
+            <font size="2px"><b>&nbsp;&nbsp;What did you like the most in this course?</b></font><br/>&nbsp;&nbsp;
+            <apex:outputLabel value="{!cff.fed_Course_Like__c}" />
+        </td></tr>
+        <tr><td>
+            <font size="2px"><b>&nbsp;&nbsp;What did you like the least in this course?How could this be imroved?</b></font><br/>&nbsp;&nbsp;
+            <apex:outputLabel value="{!cff.fed_Course_Dislike__c}" />
+        </td></tr>  
+        <tr><td>
+            <font size="2px"><b>&nbsp;&nbsp;Other comments/Suggestions</b></font><br/>&nbsp;&nbsp;
+            <apex:outputLabel value="{!cff.fed_Comments__c}" />
+        </td></tr>
+        <tr><td width="25px">
+            <font size="2px"><b>&nbsp;&nbsp;Would you recommend this program to others?&nbsp;&nbsp;
+            <apex:outputLabel value="{!cff.fed_Recommendation__c}" />
+            <span  id="sdate" style="float:right;padding-top:5px;" >Date : {!today}</span></b></font>
+        </td></tr>      
+    </table>
+   <!--  <apex:form ><apex:commandButton value="dsfds" action="{!deleteall}" reRender="btn1" id="btn1"/> </apex:form>     -->
+   
+</apex:page>
